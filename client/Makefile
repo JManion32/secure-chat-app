@@ -1,29 +1,22 @@
 CXX = g++
-QT_DIR = $(HOME)/Qt/6.10.1/gcc_64
+QT = /home/jmanion32/Qt/6.10.1/gcc_64
 
-INCLUDEPATHS = -Iinclude -I../common \
-               -I$(QT_DIR)/include \
-               -I$(QT_DIR)/include/QtCore \
-               -I$(QT_DIR)/include/QtGui \
-               -I$(QT_DIR)/include/QtWidgets \
-               -I$(QT_DIR)/include/QtNetwork
+CXXFLAGS = -std=c++17 -Wall \
+    -Iinclude -I../common \
+    -I$(QT)/include -I$(QT)/include/QtCore -I$(QT)/include/QtGui -I$(QT)/include/QtWidgets -I$(QT)/include/QtNetwork
 
-LIBPATHS = -L$(QT_DIR)/lib
+LDFLAGS = -L$(QT)/lib -lQt6Core -lQt6Gui -lQt6Widgets -lQt6Network
 
-LIBS = -lQt6Core -lQt6Gui -lQt6Widgets -lQt6Network
+OBJ = src/main.o src/client.o src/protocol_qt.o ../common/protocol.o
 
-CXXFLAGS = -std=c++17 -Wall $(INCLUDEPATHS)
-LDFLAGS = $(LIBPATHS) $(LIBS)
+../bin/client: $(OBJ)
+	$(CXX) $(OBJ) -o ../bin/client $(LDFLAGS)
 
-SRC = src/main.cpp src/client.cpp ../common/src/protocol.cpp
-OBJ = $(SRC:.cpp=.o)
+src/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-TARGET = ../bin/client
-
-all: $(TARGET)
-
-$(TARGET): $(OBJ)
-	$(CXX) $(OBJ) -o $(TARGET) $(LDFLAGS)
+../common/%.o: ../common/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f src/*.o ../common/*.o ../bin/client

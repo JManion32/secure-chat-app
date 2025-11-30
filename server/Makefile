@@ -1,16 +1,16 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Iinclude -I../common
-LDFLAGS = -pthread
 
-SRC = src/main.cpp src/server.cpp ../common//src/protocol.cpp
-OBJ = $(SRC:.cpp=.o)
+OBJ = src/main.o src/server.o ../common/protocol.o
 
-TARGET = ../bin/server
+../bin/server: $(OBJ)
+	$(CXX) $(OBJ) -o ../bin/server -pthread
 
-all: $(TARGET)
+src/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(TARGET): $(OBJ)
-	$(CXX) $(OBJ) -o $(TARGET) $(LDFLAGS)
+../common/%.o: ../common/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f src/*.o ../common/*.o ../bin/server
