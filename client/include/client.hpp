@@ -6,8 +6,8 @@
 
 class Client : public QMainWindow {
 public:
-    Client(const QString &ip, quint16 port, QWidget *parent = nullptr);
-    ~Client();  // <-- ADD THIS
+    Client(const std::string &ip, int port, QWidget *parent = nullptr);
+    ~Client();
 
 private:
     QTcpSocket *socket;

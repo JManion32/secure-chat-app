@@ -2,6 +2,7 @@
 
 namespace Protocol {
 
+    /*
     // Format:
     // [type:1 byte] [payloadLen:2 bytes] [payload]
 
@@ -40,5 +41,6 @@ namespace Protocol {
 
         return msg;
     }
+    */
 
 }

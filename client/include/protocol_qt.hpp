@@ -5,10 +5,10 @@
 #include "../../common/protocol.hpp"
 
 namespace ProtocolQt {
-
+/*
     QByteArray encodeQt(const Protocol::Message& msg);
     Protocol::Message decodeQt(const QByteArray& arr);
-
+*/
 }
 
 #endif

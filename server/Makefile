@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Iinclude -I../common
-OBJ = src/main.o src/server.o ../common/protocol.o
+OBJ = src/main.o ../common/protocol.o
 
 ../bin/linux/server: $(OBJ)
 	$(CXX) $(OBJ) -o ../bin/linux/server -pthread

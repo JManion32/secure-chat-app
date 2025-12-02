@@ -1,5 +1,3 @@
-// Boot up the server, declare multithreading, listen for connections.
-
 #include <iostream>
 
 #include <iostream>
@@ -9,18 +7,12 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#include "server.hpp"      // your server logic (dispatching)
-#include "client_handler.hpp"  // per-client thread function
-
-// The port your server will listen on:
 static const int SERVER_PORT = 5000;
 
 // Thread wrapper to match pthread signature
 void* client_thread(void* arg) {
     int client_fd = *(int*)arg;
     delete (int*)arg;  // allocated in main, free it here
-
-    //handle_client(client_fd);   // implemented in client_handler.cpp
 
     close(client_fd);
     return nullptr;
@@ -29,9 +21,7 @@ void* client_thread(void* arg) {
 int main() {
     std::cout << "[SERVER] Starting server..." << std::endl;
 
-    // -------------------------------
     // 1. Create TCP socket
-    // -------------------------------
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
         perror("[SERVER] socket() failed");
@@ -42,9 +32,7 @@ int main() {
     int opt = 1;
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    // -------------------------------
     // 2. Bind socket to port
-    // -------------------------------
     sockaddr_in server_addr{};
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;  // listen on all interfaces
@@ -56,9 +44,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    // -------------------------------
     // 3. Listen
-    // -------------------------------
     if (listen(server_fd, 10) < 0) {
         perror("[SERVER] listen() failed");
         close(server_fd);
@@ -67,9 +53,7 @@ int main() {
 
     std::cout << "[SERVER] Listening on port " << SERVER_PORT << "..." << std::endl;
 
-    // -------------------------------
     // 4. Accept loop (multithreaded)
-    // -------------------------------
     while (true) {
         sockaddr_in client_addr{};
         socklen_t client_len = sizeof(client_addr);

@@ -14,3 +14,5 @@ bin/windows/*
 # But keep the folders themselves
 !bin/linux/.gitkeep
 !bin/windows/.gitkeep
+
+!server/include/.gitkeep
