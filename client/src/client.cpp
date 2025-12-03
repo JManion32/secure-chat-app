@@ -17,6 +17,8 @@ Client::Client(const std::string& ip, int port, QWidget *parent)
         return;
     }
 
+    QMessageBox::information(this, "Success", "Successfully connected to the server!");
+
     // Start receiver thread
     recvThread = thread_create(Client::recv_loop, this);
     thread_detach(recvThread);
@@ -24,12 +26,10 @@ Client::Client(const std::string& ip, int port, QWidget *parent)
 
 Client::~Client() {
     socket_close(sockfd);
-    socket_cleanup();   // WinSock cleanup; Linux no-op
+    socket_cleanup();
 }
 
-// =========================================
-// Background recv loop (runs on thread)
-// =========================================
+// Loop to listen for server updates (messages)
 void* Client::recv_loop(void* arg) {
     Client* self = (Client*)arg;
 

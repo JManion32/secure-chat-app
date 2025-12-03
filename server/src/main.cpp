@@ -11,9 +11,22 @@ void* client_thread(void* arg) {
 
     std::cout << "[SERVER] Client thread started" << std::endl;
 
-    // Handle client here
-    // e.g. read, write, etc.
-    // socket_recv(client_fd, buffer, ...)
+    char buffer[1024];
+
+    while (true) {
+        int bytes = socket_recv(client_fd, buffer, sizeof(buffer));
+
+        if (bytes <= 0) {
+            std::cout << "[SERVER] Client disconnected\n";
+            break;
+        }
+
+        buffer[bytes] = '\0';
+        std::cout << "[CLIENT SAYS] " << buffer << std::endl;
+
+        // Echo back or handle message
+        socket_send(client_fd, buffer, bytes);
+    }
 
     socket_close(client_fd);
     return nullptr;
