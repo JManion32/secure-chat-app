@@ -1,13 +1,10 @@
-// Establish a connection to the server
-// Initialize and display the GUI
-
+// main.cpp
 #include <QApplication>
 #include "client.hpp"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    // Hardcode the server IP + port?
     const std::string SERVER_IP = "165.227.182.111";
     const int SERVER_PORT = 5000;
 

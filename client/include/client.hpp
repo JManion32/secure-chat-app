@@ -1,16 +1,21 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#pragma once
 
 #include <QMainWindow>
-#include <QTcpSocket>
+#include <string>
+
+#include "../../common/include/socket_handler.hpp"
+#include "../../common/include/thread_handler.hpp"
 
 class Client : public QMainWindow {
+    Q_OBJECT
+
 public:
-    Client(const std::string &ip, int port, QWidget *parent = nullptr);
+    Client(const std::string& ip, int port, QWidget *parent = nullptr);
     ~Client();
 
 private:
-    QTcpSocket *socket;
-};
+    SocketType sockfd;
+    ThreadType recvThread;
 
-#endif
+    static void* recv_loop(void* arg);  // background thread
+};
