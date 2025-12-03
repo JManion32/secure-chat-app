@@ -67,17 +67,18 @@ int socket_recv(SocketType sock, void* buffer, int len) {
 #endif
 }
 
-void socket_cleanup() {
-#ifdef _WIN32
-    WSACleanup();
-#endif
-}
-
 void socket_close(SocketType sock) {
 #ifdef _WIN32
     closesocket(sock);
 #else
     close(sock);
+#endif
+}
+
+// WinSock-specific call
+void socket_cleanup() {
+#ifdef _WIN32
+    WSACleanup();
 #endif
 }
 

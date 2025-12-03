@@ -9,7 +9,7 @@ void* client_thread(void* arg) {
     SocketType client_fd = *(SocketType*)arg;
     delete (SocketType*)arg;
 
-    std::cout << "[SERVER] Client thread started\n";
+    std::cout << "[SERVER] Client thread started" << std::endl;
 
     // Handle client here
     // e.g. read, write, etc.
@@ -20,38 +20,40 @@ void* client_thread(void* arg) {
 }
 
 int main() {
-    std::cout << "[SERVER] Starting server...\n";
+    std::cout << "[SERVER] Starting server..." << std::endl;
 
     // 1. Create server socket
     SocketType server_fd = socket_create();
     if (server_fd < 0) {
-        std::cerr << "[SERVER] socket_create() failed\n";
+        std::cerr << "[SERVER] socket_create() failed" << std::endl;
         return -1;
     }
+    
+    //std::cout << "File descriptor: " << server_fd << std::endl;
 
     // 2. Bind to port
     if (!socket_bind(server_fd, SERVER_PORT)) {
-        std::cerr << "[SERVER] bind() failed\n";
+        std::cerr << "[SERVER] socket_bind() failed" << std::endl;
         return -1;
     }
 
     // 3. Begin listening
     if (!socket_listen(server_fd, 10)) {
-        std::cerr << "[SERVER] listen() failed\n";
+        std::cerr << "[SERVER] socket_listen() failed" << std::endl;
         return -1;
     }
 
-    std::cout << "[SERVER] Listening on port " << SERVER_PORT << "...\n";
+    std::cout << "[SERVER] Listening on port " << SERVER_PORT << "..." << std::endl;
 
     // 4. Accept loop
     while (true) {
         SocketType client_fd = socket_accept(server_fd);
         if (client_fd < 0) {
-            std::cerr << "[SERVER] accept() failed\n";
+            std::cerr << "[SERVER] socket_accept() failed" << std::endl;
             continue;
         }
 
-        std::cout << "[SERVER] Client connected!\n";
+        std::cout << "[SERVER] Client connected!" << std::endl;
 
         // Make heap copy of fd for thread
         SocketType* fd_copy = new SocketType(client_fd);

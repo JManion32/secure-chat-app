@@ -1,4 +1,5 @@
-#pragma once
+// Define a Socket API wrapper so we don't have to worry about 
+// OS compatability in the rest of the code.
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -11,13 +12,17 @@
     typedef int SocketType;
 #endif
 
-// Socket API wrapper
-SocketType socket_create();
+// Client
 bool socket_connect(SocketType sock, const char* ip, int port);
+
+// Server
+SocketType socket_create();
 bool socket_bind(SocketType sock, int port);
 bool socket_listen(SocketType sock, int backlog = 10);
 SocketType socket_accept(SocketType server);
-int socket_send(SocketType sock, const void* data, int len);
+
+//Both
 int socket_recv(SocketType sock, void* buffer, int len);
-void socket_cleanup();  // No-op on Linux, WSACleanup() on Windows
+int socket_send(SocketType sock, const void* data, int len);
 void socket_close(SocketType sock);
+void socket_cleanup();
