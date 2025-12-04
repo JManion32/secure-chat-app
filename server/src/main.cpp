@@ -39,6 +39,5 @@ int main() {
     }
 
     socket_close(server_fd);
-    socket_cleanup();
     return 0;
 }

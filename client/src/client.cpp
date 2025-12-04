@@ -114,10 +114,8 @@ Client::Client(const std::string& ip, int port, QWidget *parent) : QMainWindow(p
 
 Client::~Client() {
     socket_close(sockfd);
-    socket_cleanup();
 }
 
-// Receive loop for server updates
 void* Client::recv_loop(void* arg) {
     Client* self = (Client*)arg;
 

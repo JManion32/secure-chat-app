@@ -25,4 +25,3 @@ SocketType socket_accept(SocketType server);
 int socket_recv(SocketType sock, void* buffer, int len);
 int socket_send(SocketType sock, const void* data, int len);
 void socket_close(SocketType sock);
-void socket_cleanup();
