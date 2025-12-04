@@ -1,6 +1,5 @@
 #include "../../common/include/socket_handler.hpp"
 #include "../../common/include/thread_handler.hpp"
-#include "../../common/include/protocol.hpp"
 #include "../include/client_handler.hpp"
 
 static const int SERVER_PORT = 5000;
@@ -19,7 +18,7 @@ int main() {
         return -1;
     }
 
-    if (!socket_listen(server_fd, 10)) {
+    if (!socket_listen(server_fd)) {
         std::cerr << "[SERVER] socket_listen() failed" << std::endl;
         return -1;
     }

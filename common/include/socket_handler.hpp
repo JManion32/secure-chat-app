@@ -18,7 +18,7 @@ bool socket_connect(SocketType sock, const char* ip, int port);
 // Server
 SocketType socket_create();
 bool socket_bind(SocketType sock, int port);
-bool socket_listen(SocketType sock, int backlog = 10);
+bool socket_listen(SocketType sock);
 SocketType socket_accept(SocketType server);
 
 //Both

@@ -37,8 +37,8 @@ bool socket_bind(SocketType sock, int port) {
     return bind(sock, (sockaddr*)&addr, sizeof(addr)) == 0;
 }
 
-bool socket_listen(SocketType sock, int backlog) {
-    return listen(sock, backlog) == 0;
+bool socket_listen(SocketType sock) {
+    return listen(sock, 10) == 0;
 }
 
 SocketType socket_accept(SocketType server) {

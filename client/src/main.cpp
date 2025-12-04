@@ -11,7 +11,6 @@ int main(int argc, char *argv[]) {
     const int SERVER_PORT = 5000;
 
     Client client(SERVER_IP, SERVER_PORT);
-    client.show();
 
     QFile file("../../client/styles/main.qss");
 

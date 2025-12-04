@@ -111,6 +111,8 @@ Client::Client(const std::string& ip, int port, QWidget *parent) : QMainWindow(p
     stack->addWidget(chatScreen);   // index 1
     stack->addWidget(shopScreen);   // index 2
     setCentralWidget(stack);
+
+    show();
 }
 
 Client::~Client() {
