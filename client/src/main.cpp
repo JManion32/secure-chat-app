@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     Client client(SERVER_IP, SERVER_PORT);
     client.show();
 
-    QFile file("../styles/main.qss");
+    QFile file("../../client/styles/main.qss");
 
     bool success = file.open(QFile::ReadOnly);
     if (!success) {
