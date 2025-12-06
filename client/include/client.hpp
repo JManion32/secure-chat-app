@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QTimer>
 #include <QMessageBox>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -28,10 +31,16 @@ private:
     QWidget* buildLoginScreen();
     QWidget* buildChatScreen();
     QWidget* buildShopScreen();
+    void addMessage(const QString& text, bool fromSelf);
 
     QWidget* loginScreen;
     QWidget* chatScreen;
     QWidget* shopScreen;
+
+    QScrollArea* scroll = nullptr;
+    QWidget* scrollContent = nullptr;
+    QVBoxLayout* messageList = nullptr;
+
 
     QStackedWidget* stack = new QStackedWidget(this);
 };
