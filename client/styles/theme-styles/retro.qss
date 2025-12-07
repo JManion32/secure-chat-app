@@ -1,0 +1,114 @@
+/* ----------------------------------------
+   CHAT ROOM
+-----------------------------------------*/
+
+#chat-screen {
+    background-color: #666547
+}
+
+#chat-username {
+    color: #ffffff;
+}
+
+#theme-shop-button {
+    background: #ffe28a;
+    color: #222222;
+}
+
+#theme-shop-button:hover {
+    background: #ffecb4;
+}
+
+#chat-send-button {
+    background: #ffe28a;
+    color: #222222;
+}
+
+#chat-send-button:hover {
+    background: #ffecb4;
+}
+
+#chat-scroll QScrollBar:vertical {
+    background: #CCCCCC;
+    color: #CCCCCC;
+}
+
+#chat-scroll QScrollBar::handle:vertical {
+    background: #AAAAAA;
+}
+
+#chat-content {
+    background: #fffeb3;
+}
+
+#message-input-box {
+    background: #DDDDDD;
+    color: #222222;
+}
+
+#bubble-self {
+    background: #6fcb9f;
+}
+
+#bubble-other {
+    background: #fb2e01;
+}
+
+#message-self {
+    color: #ffffff;
+}
+
+#message-other {
+    color: #ffffff;
+}
+
+#message-meta-self, #message-meta-other {
+    color: #888888;
+}
+
+/* ----------------------------------------
+   SHOP SCREEN STYLING
+-----------------------------------------*/
+
+#shop-screen {
+    background-color: #666547
+}
+
+/* Header */
+#shop-return-button {
+    background: #ffe28a;
+    color: #222222;
+}
+
+#shop-return-button:hover {
+    background: #ffecb4;
+}
+
+#shop-credit-label {
+    color: #ffffff;
+}
+
+/* Theme Cards */
+#theme-card {
+    background: #ffe28a;
+    border: 1px solid #666547;
+}
+
+#theme-card:hover {
+    border-color: #666547;
+}
+
+/* Title */
+#theme-title {
+    color: #222222;
+}
+
+/* Buy Button */
+#theme-buy-button {
+    background: #6fcb9f;
+    color: #ffffff;
+}
+
+#theme-buy-button:hover {
+    background: #7ed9ad;
+}

@@ -3,7 +3,7 @@
 -----------------------------------------*/
 
 #chat-screen {
-    background-color: #260351;
+    background-color: #1f1f1f;
 }
 
 #chat-username {
@@ -73,12 +73,12 @@
 
 /* Header */
 #shop-return-button {
-    background: #343434;
+    background: #ffa407;
     color: #ffffff;
 }
 
 #shop-return-button:hover {
-    background: #505050;
+    background: #cc6e2f;
 }
 
 #shop-credit-label {
@@ -92,7 +92,7 @@
 }
 
 #theme-card:hover {
-    border-color: #b30000;
+    border-color: #ffa407;
 }
 
 /* Title */
