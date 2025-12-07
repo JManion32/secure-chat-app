@@ -1,6 +1,7 @@
 #include "../../common/include/socket_handler.hpp"
 #include "../../common/include/thread_handler.hpp"
-#include "../include/client_handler.hpp"
+#include "../include/client_thread.hpp"
+#include <iostream>
 
 static const int SERVER_PORT = 5000;
 

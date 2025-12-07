@@ -29,6 +29,9 @@ private:
     SocketType sockfd;
     ThreadType recvThread;
 
+    QString username;
+    int credit_count;
+
     static void* recv_loop(void* arg);  // background thread for receiving server updates
 
     QWidget* buildLoginScreen();

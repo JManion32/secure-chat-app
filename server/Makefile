@@ -3,6 +3,9 @@ CXXFLAGS = -std=c++17 -Wall -Iinclude -I../common
 
 OBJ = \
     src/main.o \
+    src/client_thread.o \
+    src/server.o \
+    src/message_system.o \
     ../common/src/protocol.o \
     ../common/src/socket_handler.o \
     ../common/src/thread_handler.o
