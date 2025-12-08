@@ -166,7 +166,7 @@ void handlePurchaseRequest(SocketType client_fd, const std::string& payload) {
     int itemIndex     = std::stoi(parts[2]);
 
     // Prices (server authoritative)
-    const int prices[9] = {0, 0, 100, 100, 200, 300, 300, 300, 1000000};
+    const int prices[9] = {0, 0, 25, 50, 75, 100, 150, 200, 100000};
 
     if (itemIndex < 0 || itemIndex >= 9) {
         std::cerr << "[SERVER] PURCHASE_REQUEST: Invalid itemIndex\n";

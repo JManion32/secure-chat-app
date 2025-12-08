@@ -146,6 +146,7 @@ void Client::processIncomingMessage(const Message& msg) {
                             int newCredits  = parts[2].toInt();
 
                             credit_count = newCredits;
+                            ownedThemes[itemID] = true;
 
                             // Update chat header button
                             if (shopButton) {
@@ -160,7 +161,6 @@ void Client::processIncomingMessage(const Message& msg) {
                             // Update the specific theme button, if it exists
                             if (itemID >= 0 && itemID < (int)themeButtons.size() && themeButtons[itemID]) {
                                 themeButtons[itemID]->setText("Purchased");
-                                themeButtons[itemID]->setEnabled(false);
                             }
 
                             QMessageBox::information(this, "Purchase", "Theme unlocked!");
@@ -471,17 +471,13 @@ QWidget* Client::buildShopScreen() {
 
         {0, "Light Mode",   "../../client/themes/light_mode.png",   "../../client/styles/theme-styles/light.qss",      0},
         {1, "Dark Mode",    "../../client/themes/dark_mode.png",    "../../client/styles/theme-styles/black.qss",      0},
-
-        {2, "Warm Tones",   "../../client/themes/warm_mode.png",    "../../client/styles/theme-styles/warm.qss",     100},
-        {3, "Neon Lights",  "../../client/themes/neon_mode.png",    "../../client/styles/theme-styles/neon.qss",     100},
-
-        {4, "Forest",       "../../client/themes/forest_mode.png",  "../../client/styles/theme-styles/forest.qss",   300},
-        {5, "Retro",        "../../client/themes/retro_mode.png",   "../../client/styles/theme-styles/retro.qss",    300},
-
-        {6, "Halloween",    "../../client/themes/halloween_mode.png","../../client/styles/theme-styles/halloween.qss",500},
-        {7, "Festive",      "../../client/themes/festive_mode.png", "../../client/styles/theme-styles/festive.qss",  500},
-
-        {8, "Premium Gold", "../../client/themes/premium_mode.png", "../../client/styles/theme-styles/premium.qss",1000000},
+        {2, "Warm Tones",   "../../client/themes/warm_mode.png",    "../../client/styles/theme-styles/warm.qss",     25},
+        {3, "Neon Lights",  "../../client/themes/neon_mode.png",    "../../client/styles/theme-styles/neon.qss",     50},
+        {4, "Forest",       "../../client/themes/forest_mode.png",  "../../client/styles/theme-styles/forest.qss",   75},
+        {5, "Retro",        "../../client/themes/retro_mode.png",   "../../client/styles/theme-styles/retro.qss",    100},
+        {6, "Halloween",    "../../client/themes/halloween_mode.png","../../client/styles/theme-styles/halloween.qss",150},
+        {7, "Festive",      "../../client/themes/festive_mode.png", "../../client/styles/theme-styles/festive.qss",  200},
+        {8, "Premium Gold", "../../client/themes/premium_mode.png", "../../client/styles/theme-styles/premium.qss",100000},
     };
 
     QGridLayout* grid = new QGridLayout();
