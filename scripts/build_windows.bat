@@ -1,118 +1,167 @@
 @echo off
 setlocal
 
-REM ============================================
-REM CONFIGURATION
-REM ============================================
-set BINDIR=bin
-set SRCDIR=src
-set COMMONDIR=common
 
-REM Windows compiler (MSVC)
-if not defined VSINSTALLDIR (
-    echo You must run this script from a "Developer Command Prompt for VS".
-    echo Or run: vcvarsall.bat x64
-    exit /b 1
+REM =======================================================
+REM MOVE TO PROJECT ROOT
+REM =======================================================
+cd /d "%~dp0.."
+
+
+REM =======================================================
+REM CONFIG
+REM =======================================================
+set SRV_SRC=server\src
+set CLI_SRC=client\src
+set COMMON=common\src
+set BIN=bin\windows
+
+
+if not exist "%BIN%" mkdir "%BIN%"
+
+
+REM Ensure MinGW g++ exists
+where g++ >nul 2>nul
+if errorlevel 1 (
+   echo ERROR: g++ not found! Install MinGW-w64 and add to PATH.
+   exit /b 1
 )
 
-REM Ensure output directory exists
-if not exist "%BINDIR%" mkdir "%BINDIR%"
 
-REM Compiler flags
-set CFLAGS=/EHsc /std:c++17
-set LIBS=ws2_32.lib
-
-REM Common source files
-set COMMON=%COMMONDIR%\socket_handler.cpp %COMMONDIR%\thread_handler.cpp
+REM Ensure Qt MinGW directory is set
+if "%QT_DIR%"=="" (
+   echo ERROR: Set QT_DIR to your Qt MinGW directory.
+   echo Example:  set QT_DIR=C:\Qt\6.6.0\mingw_64
+   exit /b 1
+)
 
 
-REM ============================================
-REM BUILD SERVER
-REM ============================================
+set CFLAGS=-std=c++17 -O2
+set LIBS=-lws2_32 -luser32 -lgdi32
+
+
+
+
+REM =======================================================
+REM CLEAN
+REM =======================================================
+if /I "%1"=="clean" goto clean
+
+
+
+
+REM =======================================================
+REM CLIENT ONLY
+REM =======================================================
+if /I "%1"=="client" goto build_client
+
+
+
+
+REM =======================================================
+REM SERVER ONLY
+REM =======================================================
+if /I "%1"=="server" goto build_server_only
+
+
+
+
+REM =======================================================
+REM DEFAULT: BUILD BOTH
+REM =======================================================
+goto build_both
+
+
+
+
+
+
 :build_server
-cl %CFLAGS% ^
-    %SRCDIR%\server\server.cpp ^
-    %COMMON% ^
-    /Fe%BINDIR%\server.exe ^
-    %LIBS%
+echo Building server...
+
+
+g++ %CFLAGS% ^
+   "%SRV_SRC%\main.cpp" ^
+   "%SRV_SRC%\client_thread.cpp" ^
+   "%SRV_SRC%\server.cpp" ^
+   "%COMMON%\socket_handler.cpp" ^
+   "%COMMON%\thread_handler.cpp" ^
+   "%COMMON%\protocol.cpp" ^
+   -o "%BIN%\server.exe" ^
+   %LIBS%
+
 
 if errorlevel 1 exit /b 1
 echo Server built successfully.
-goto done_server
+goto :EOF
 
 
-REM ============================================
-REM BUILD CLIENT (Qt GUI)
-REM ============================================
+
+
+
+
 :build_client
+echo Building client...
 
-REM NOTE: Qt DLLs & paths must be in environment:
-REM   set QT_DIR=C:\Qt\6.7.0\msvc2019_64
-REM   set PATH=%QT_DIR%\bin;%PATH%
 
-cl %CFLAGS% ^
-    /I "%QT_DIR%\include" ^
-    /I "%QT_DIR%\include\QtWidgets" ^
-    /I "%QT_DIR%\include\QtCore" ^
-    /I "%QT_DIR%\include\QtGui" ^
-    %SRCDIR%\client\client.cpp ^
-    %COMMON% ^
-    /Fe%BINDIR%\client.exe ^
-    %LIBS% ^
-    "%QT_DIR%\lib\Qt6Core.lib" ^
-    "%QT_DIR%\lib\Qt6Gui.lib" ^
-    "%QT_DIR%\lib\Qt6Widgets.lib"
+g++ %CFLAGS% ^
+   -I "%QT_DIR%\include" ^
+   -I "%QT_DIR%\include\QtWidgets" ^
+   -I "%QT_DIR%\include\QtCore" ^
+   -I "%QT_DIR%\include\QtGui" ^
+   -I "%QT_DIR%\include\QtNetwork" ^
+   -I "client\include" ^
+   -L "%QT_DIR%\lib" ^
+   "%CLI_SRC%\client.cpp" ^
+   "%CLI_SRC%\main.cpp" ^
+   "%COMMON%\socket_handler.cpp" ^
+   "%COMMON%\thread_handler.cpp" ^
+   "%COMMON%\protocol.cpp" ^
+   -o "%BIN%\client.exe" ^
+   -lQt6Core -lQt6Gui -lQt6Widgets -lQt6Network ^
+   %LIBS%
+
 
 if errorlevel 1 exit /b 1
 echo Client built successfully.
-goto done_client
+goto :EOF
 
 
-REM ============================================
-REM BUILD ALL
-REM ============================================
-:build_all
+
+
+
+
+
+
+:build_server_only
+call :build_server
+goto end
+
+
+
+
+:build_both
 call :build_server
 call :build_client
-echo All binaries built!
 goto end
 
 
-REM ============================================
-REM MENU / ARGUMENT HANDLING
-REM ============================================
-:menu
-echo.
-echo Windows Build Script
-echo -----------------------------------------
-echo 1. Build ALL
-echo 2. Build SERVER only
-echo 3. Build CLIENT only
-echo.
-
-set /p choice="Choose option: "
-
-if "%choice%"=="1" goto build_all
-if "%choice%"=="2" goto build_server
-if "%choice%"=="3" goto build_client
-
-echo Invalid option.
-goto menu
 
 
-REM ============================================
-REM DONE LABELS
-REM ============================================
-:done_server
+
+
+:clean
+echo Cleaning...
+del /q "%BIN%\*.exe" 2>nul
+echo Clean done.
 goto end
 
-:done_client
-goto end
 
-REM ============================================
-REM END
-REM ============================================
+
+
+
+
 :end
 echo.
-echo Build complete.
+echo Done.
 exit /b 0
