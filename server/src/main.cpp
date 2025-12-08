@@ -26,6 +26,7 @@ int main() {
 
     std::cout << "[SERVER] Listening on port " << SERVER_PORT << "..." << std::endl;
 
+    // Socket accept loop
     while (true) {
         SocketType client_fd = socket_accept(server_fd);
         if (client_fd < 0) {

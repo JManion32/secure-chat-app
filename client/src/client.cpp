@@ -155,7 +155,7 @@ void Client::processIncomingMessage(const Message& msg) {
                             }
 
                             if (itemID >= 0 && itemID < (int)themeButtons.size() && themeButtons[itemID]) {
-                                themeButtons[itemID]->setText("Purchased");
+                                themeButtons[itemID]->setText("Enable");
                             }
 
                             QMessageBox::information(this, "Purchase", "Theme unlocked!");
@@ -391,7 +391,7 @@ QWidget* Client::buildChatScreen() {
     outer->addWidget(inputWidget, 0);
 
     /*
-    // DEBUG: Preload sample messages
+    // DEBUG: PurchasedPreload sample messages
     addMessage("Hello, welcome to the chat!", false);
     addMessage("Hey! This is what my own messages look like.", true);
     addMessage("Testing long messages to make sure wrapping works. "
@@ -498,7 +498,6 @@ QWidget* Client::buildShopScreen() {
 
         QVBoxLayout* cardLayout = new QVBoxLayout(card);
 
-        // Align content to the top, not the center
         cardLayout->setAlignment(Qt::AlignCenter);
 
         // Image
@@ -525,7 +524,7 @@ QWidget* Client::buildShopScreen() {
 
         // Button text depends on ownership
         if (ownedThemes[themeId]) {
-            buyBtn->setText("Purchased");
+            buyBtn->setText("Enable");
         } else {
             buyBtn->setText("Buy (" + QString::number(theme.price) + ")");
         }
@@ -557,7 +556,7 @@ QWidget* Client::buildShopScreen() {
         cardLayout->addWidget(buyBtn, 0, Qt::AlignHCenter);
 
         // Push everything to the top visually
-        cardLayout->addStretch();
+        //cardLayout->addStretch();
 
         grid->addWidget(card, row, col);
     }
@@ -568,6 +567,7 @@ QWidget* Client::buildShopScreen() {
     return shopScreen;
 }
 
+// Add a message to the chat area
 void Client::addMessage(const QString& user, const QString& text, bool fromSelf) {
     // 1. MESSAGE BUBBLE (only contains the actual text)
     QLabel* msg = new QLabel(text);
@@ -628,6 +628,13 @@ void Client::addMessage(const QString& user, const QString& text, bool fromSelf)
     });
 }
 
+// Apply the chosen theme
+/*
+    A quick rundown of how the themes work:
+    I made a stylesheet for all the normal qss (css) stuff like padding, etc. 
+    I then made a stylesheet for each theme. When that theme gets applied we 
+    reapply all site styles here.
+*/
 void Client::applyTheme(const QString& themePath) {
     QString style;
 

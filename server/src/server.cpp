@@ -9,6 +9,7 @@
 std::vector<ClientConnection> g_clients;
 pthread_mutex_t g_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// Send message to all connected clients
 void broadcastMessage(const Message& msg) {
     std::vector<uint8_t> data = Protocol::serialize(msg);
 
@@ -19,6 +20,7 @@ void broadcastMessage(const Message& msg) {
     pthread_mutex_unlock(&g_clients_mutex);
 }
 
+// When a client disconnects
 void removeClient(SocketType sock) {
     pthread_mutex_lock(&g_clients_mutex);
     g_clients.erase(

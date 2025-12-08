@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 
+// Handle update from client
 void handleMessage(SocketType client_fd, const Message& msg) {
     switch (msg.type) {
 
@@ -27,6 +28,7 @@ void handleMessage(SocketType client_fd, const Message& msg) {
     }
 }
 
+// recv loop for an individual client
 void* client_thread(void* arg) {
     SocketType client_fd = *(SocketType*)arg;
     delete (SocketType*)arg;
