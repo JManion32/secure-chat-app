@@ -44,7 +44,7 @@ private:
     // Client Information
     QString username;
     QString token;
-    int credit_count;
+    int credit_count = 0;
 
     // GUI
     QWidget* buildLoginScreen();
@@ -57,7 +57,10 @@ private:
     QWidget* chatScreen;
     QWidget* shopScreen;
 
+    // These are the elements that change dynamically (excluding the chat area)
     QLabel* nameLabel;
+    QPushButton* shopButton;
+    QLabel* creditLabel;
 
     QScrollArea* scroll = nullptr;
     QWidget* scrollContent = nullptr;

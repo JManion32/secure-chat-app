@@ -122,6 +122,11 @@ void Client::processIncomingMessage(const Message& msg) {
                     QString qUser = QString::fromStdString(senderUser);
                     QString qMsg  = QString::fromStdString(senderMsg);
 
+                    credit_count += 1;
+
+                    shopButton->setText("Theme Shop (" + QString::number(credit_count) + ")");
+                    creditLabel->setText("Credits: " + QString::number(credit_count));
+
                     addMessage(qUser, qMsg, fromSelf);
 
                     break;
@@ -256,7 +261,7 @@ QWidget* Client::buildChatScreen() {
     header->addStretch(1);
 
     // SHOP BUTTON
-    QPushButton* shopButton = new QPushButton("Credits: 100");
+    shopButton = new QPushButton("Theme Shop (" + QString::number(credit_count) + ")");
     shopButton->setObjectName("theme-shop-button");
     shopButton->setMinimumWidth(140);        // more flexible than fixedWidth
     shopButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -332,9 +337,7 @@ QWidget* Client::buildChatScreen() {
 
         // Serialize and send
         std::vector<uint8_t> data = Protocol::serialize(msg);
-        if (socket_send(sockfd, (const char*)data.data(), data.size())) {
-            credit_count += 1;
-        }
+        socket_send(sockfd, (const char*)data.data(), data.size());
 
         // Clear input
         messageBox->clear();
@@ -408,7 +411,7 @@ QWidget* Client::buildShopScreen() {
     });
 
     // Credits label
-    QLabel* creditLabel = new QLabel("Credits: 100");
+    creditLabel = new QLabel("Credits: 0");
     creditLabel->setObjectName("shop-credit-label");
     creditLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
 

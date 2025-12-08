@@ -52,7 +52,7 @@ void handleAuthRequest(SocketType client_fd, const std::string& username) {
 
     c->username = username;
     c->token = generateToken();
-    c->credits = 1;
+    c->credits = 0;
 
     pthread_mutex_unlock(&g_clients_mutex);
 
