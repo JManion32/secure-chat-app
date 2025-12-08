@@ -59,7 +59,7 @@ private:
     QWidget* chatScreen;
     QWidget* shopScreen;
 
-    // These are the elements that change dynamically (excluding the chat area)
+    // These are the elements that change dynamically
     QLabel* nameLabel;
     QPushButton* shopButton;
     QLabel* creditLabel;

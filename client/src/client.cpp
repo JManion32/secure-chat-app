@@ -46,10 +46,8 @@ void* Client::recv_loop(void* arg) {
             break;
         }
 
-        // Append newly received bytes
         recv_buffer.insert(recv_buffer.end(), temp, temp + bytes);
 
-        // Process all complete messages
         while (true) {
             if (recv_buffer.size() < 4)
                 break;
@@ -66,7 +64,6 @@ void* Client::recv_loop(void* arg) {
 
             size_t full_packet = 4 + body_len;
 
-            // Not enough data yet
             if (recv_buffer.size() < full_packet)
                 break;
 
@@ -93,6 +90,7 @@ disconnect:
     return nullptr;
 }
 
+// Process the incoming message from the server, and update the UI accordingly
 void Client::processIncomingMessage(const Message& msg) {
     QMetaObject::invokeMethod(
         this,
@@ -148,24 +146,20 @@ void Client::processIncomingMessage(const Message& msg) {
                             credit_count = newCredits;
                             ownedThemes[itemID] = true;
 
-                            // Update chat header button
                             if (shopButton) {
                                 shopButton->setText(QString("Theme Shop (%1)").arg(credit_count));
                             }
 
-                            // Update shop header label (if shop is built)
                             if (creditLabel) {
                                 creditLabel->setText("Credits: " + QString::number(credit_count));
                             }
 
-                            // Update the specific theme button, if it exists
                             if (itemID >= 0 && itemID < (int)themeButtons.size() && themeButtons[itemID]) {
                                 themeButtons[itemID]->setText("Purchased");
                             }
 
                             QMessageBox::information(this, "Purchase", "Theme unlocked!");
                         } else {
-                            // Malformed YES response
                             QMessageBox::warning(this, "Purchase", "Purchase response malformed.");
                         }
                     } else {
@@ -197,20 +191,24 @@ QWidget* Client::buildLoginScreen() {
     QVBoxLayout* loginLayout = new QVBoxLayout();
     loginLayout->setAlignment(Qt::AlignCenter);
 
+    // Title
     QLabel* titleLabel = new QLabel("SECURE CHATROOM");
     titleLabel->setObjectName("site-label");
     titleLabel->setAlignment(Qt::AlignCenter);
 
+    // Description
     QLabel* descLabel = new QLabel("Send messages to unlock cool themes!");
     descLabel->setObjectName("site-desc");
     descLabel->setAlignment(Qt::AlignCenter);
 
+    // Username field
     QLineEdit* usernameInput = new QLineEdit();
     usernameInput->setObjectName("username-input");
     usernameInput->setPlaceholderText("Enter username");
     usernameInput->setFixedWidth(300);
     usernameInput->setMaxLength(32);
 
+    // Connect button
     QPushButton* connectButton = new QPushButton("Connect");
     connectButton->setObjectName("connect-button");
     connectButton->setFixedWidth(100);
@@ -269,7 +267,7 @@ QWidget* Client::buildChatScreen() {
     outer->setSpacing(10);
 
     //===================================
-    // HEADER (top 10%)
+    // HEADER
     //===================================
     QWidget* headerWidget = new QWidget();
     headerWidget->setObjectName("chat-header");
@@ -320,7 +318,7 @@ QWidget* Client::buildChatScreen() {
     scroll->setWidget(scrollContent);
 
     //===================================
-    // BOTTOM INPUT BAR (bottom 10%)
+    // BOTTOM INPUT BAR
     //===================================
     QWidget* inputWidget = new QWidget();
     inputWidget->setObjectName("chat-input");
@@ -373,7 +371,6 @@ QWidget* Client::buildChatScreen() {
         messageBox->clear();
     });
 
-    // --- Pressing ENTER triggers the send button ---
     connect(messageBox, &QLineEdit::returnPressed, sendButton, &QPushButton::click);
 
     // Auto-scroll to bottom after sending
@@ -457,7 +454,7 @@ QWidget* Client::buildShopScreen() {
     // GRID OF THEMES
     //===================================
 
-    themeButtons.resize(9, nullptr);   // 9 themes total
+    themeButtons.resize(9, nullptr);
 
     struct ThemeItem {
         int id;
@@ -502,7 +499,7 @@ QWidget* Client::buildShopScreen() {
         QVBoxLayout* cardLayout = new QVBoxLayout(card);
 
         // Align content to the top, not the center
-        cardLayout->setAlignment(Qt::AlignTop);
+        cardLayout->setAlignment(Qt::AlignCenter);
 
         // Image
         QLabel* img = new QLabel();
@@ -542,7 +539,7 @@ QWidget* Client::buildShopScreen() {
                 return;
             }
 
-            // Not owned → send purchase request
+            // Not owned, send purchase request
             Message msg;
             msg.type = MessageType::PURCHASE_REQUEST;
             msg.payload =
