@@ -460,21 +460,20 @@ QWidget* Client::buildShopScreen() {
         int id;
         QString name;
         QString imagePath;
-        QString qssPath;
+        QString themeKey;
         int price;
     };
 
     std::vector<ThemeItem> themes = {
-
-        {0, "Light Mode",   "../../client/themes/light_mode.png",   "../../client/styles/theme-styles/light.qss",      0},
-        {1, "Dark Mode",    "../../client/themes/dark_mode.png",    "../../client/styles/theme-styles/black.qss",      0},
-        {2, "Warm Tones",   "../../client/themes/warm_mode.png",    "../../client/styles/theme-styles/warm.qss",     25},
-        {3, "Neon Lights",  "../../client/themes/neon_mode.png",    "../../client/styles/theme-styles/neon.qss",     50},
-        {4, "Forest",       "../../client/themes/forest_mode.png",  "../../client/styles/theme-styles/forest.qss",   75},
-        {5, "Retro",        "../../client/themes/retro_mode.png",   "../../client/styles/theme-styles/retro.qss",    100},
-        {6, "Halloween",    "../../client/themes/halloween_mode.png","../../client/styles/theme-styles/halloween.qss",150},
-        {7, "Festive",      "../../client/themes/festive_mode.png", "../../client/styles/theme-styles/festive.qss",  200},
-        {8, "Premium Gold", "../../client/themes/premium_mode.png", "../../client/styles/theme-styles/premium.qss",100000},
+        {0, "Light Mode",   "../../client/themes/light_mode.png",    "light",     0},
+        {1, "Dark Mode",    "../../client/themes/dark_mode.png",     "dark",      0},
+        {2, "Warm Tones",   "../../client/themes/warm_mode.png",     "warm",     25},
+        {3, "Neon Lights",  "../../client/themes/neon_mode.png",     "neon",     50},
+        {4, "Forest",       "../../client/themes/forest_mode.png",   "forest",   75},
+        {5, "Retro",        "../../client/themes/retro_mode.png",    "retro",    100},
+        {6, "Halloween",    "../../client/themes/halloween_mode.png","halloween",150},
+        {7, "Festive",      "../../client/themes/festive_mode.png",  "festive",  200},
+        {8, "Premium Gold", "../../client/themes/premium_mode.png",  "premium", 100000},
     };
 
     QGridLayout* grid = new QGridLayout();
@@ -534,7 +533,7 @@ QWidget* Client::buildShopScreen() {
 
             if (ownedThemes[themeId]) {
                 // Already bought → just apply theme
-                applyTheme(theme.qssPath);
+                applyTheme(theme.themeKey);
                 return;
             }
 
@@ -629,23 +628,15 @@ void Client::addMessage(const QString& user, const QString& text, bool fromSelf)
 }
 
 // Apply the chosen theme
-/*
-    A quick rundown of how the themes work:
-    I made a stylesheet for all the normal qss (css) stuff like padding, etc. 
-    I then made a stylesheet for each theme. When that theme gets applied we 
-    reapply all site styles here.
-*/
-void Client::applyTheme(const QString& themePath) {
+void Client::applyTheme(const QString& themeName) {
     QString style;
 
-    QFile mainFile("../../client/styles/main.qss");
-    if (mainFile.open(QFile::ReadOnly)) {
-        style += QString::fromUtf8(mainFile.readAll()) + "\n";
-    }
+    // Base (site-wide) styling:
+    style += MAIN_QSS + "\n";
 
-    QFile themeFile(themePath);
-    if (themeFile.open(QFile::ReadOnly)) {
-        style += QString::fromUtf8(themeFile.readAll()) + "\n";
+    // Theme-specific styling:
+    if (THEME_MAP.contains(themeName)) {
+        style += THEME_MAP.value(themeName);
     }
 
     this->setStyleSheet(style);

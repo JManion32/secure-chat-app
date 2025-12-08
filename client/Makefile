@@ -14,6 +14,7 @@ LDFLAGS = -L$(QT)/lib -lQt6Core -lQt6Gui -lQt6Widgets -lQt6Network -pthread
 OBJ = \
     src/main.o \
     src/client.o \
+    src/themes.o \
     ../common/src/protocol.o \
     ../common/src/socket_handler.o \
     ../common/src/thread_handler.o

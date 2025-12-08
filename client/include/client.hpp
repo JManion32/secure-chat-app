@@ -19,6 +19,7 @@
 #include "../../common/include/socket_handler.hpp"
 #include "../../common/include/thread_handler.hpp"
 #include "../../common/include/protocol.hpp"
+#include "themes.hpp"
 
 class Client : public QMainWindow {
 
