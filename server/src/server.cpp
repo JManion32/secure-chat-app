@@ -136,7 +136,7 @@ void handleChatSend(SocketType client_fd, const std::string& payload) {
     // Build the message to broadcast
     Message outgoing;
     outgoing.type = MessageType::CHAT_DELIVER;
-    outgoing.payload = username + "|" + message;
+    outgoing.payload = c->token + "|" + username + "|" + message;
 
     broadcastMessage(outgoing);
 }
@@ -166,7 +166,7 @@ void handlePurchaseRequest(SocketType client_fd, const std::string& payload) {
     int itemIndex     = std::stoi(parts[2]);
 
     // Hard-coded prices (server authoritative)
-    const int prices[9] = {0, 0, 100, 200, 300, 300, 500, 500, 1000000};
+    const int prices[9] = {0, 0, 100, 100, 200, 300, 300, 300, 1000000};
 
     if (itemIndex < 0 || itemIndex >= 9) {
         std::cerr << "[SERVER] PURCHASE_REQUEST: Invalid itemIndex\n";

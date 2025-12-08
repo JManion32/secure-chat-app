@@ -32,26 +32,121 @@ Client::~Client() {
 void* Client::recv_loop(void* arg) {
     Client* self = (Client*)arg;
 
-    char buffer[1024];
+    std::vector<uint8_t> recv_buffer;
+    recv_buffer.reserve(2048);
+
+    uint8_t temp[1024];
 
     while (true) {
-        int bytes = socket_recv(self->sockfd, buffer, sizeof(buffer));
+        int bytes = socket_recv(self->sockfd, reinterpret_cast<char*>(temp), sizeof(temp));
 
         if (bytes <= 0) {
             std::cout << "[CLIENT] Server disconnected\n";
             break;
         }
 
-        buffer[bytes] = '\0';
-        std::cout << "[SERVER] " << buffer << std::endl;
+        // Append newly received bytes
+        recv_buffer.insert(recv_buffer.end(), temp, temp + bytes);
 
-        // If needed, emit signals to update Qt UI
-        // emit self->messageReceived(QString::fromUtf8(buffer));
+        // Process all complete messages
+        while (true) {
+            if (recv_buffer.size() < 4)
+                break;
+
+            // Read the length prefix
+            uint32_t body_len_be;
+            std::memcpy(&body_len_be, recv_buffer.data(), 4);
+            uint32_t body_len = ntohl(body_len_be);
+
+            if (body_len < 1) {
+                std::cerr << "[CLIENT] Invalid body length\n";
+                goto disconnect;
+            }
+
+            size_t full_packet = 4 + body_len;
+
+            // Not enough data yet
+            if (recv_buffer.size() < full_packet)
+                break;
+
+            // Extract the message body
+            const uint8_t* body_ptr = recv_buffer.data() + 4;
+
+            Message msg;
+            if (!Protocol::deserialize(body_ptr, body_len, msg)) {
+                std::cerr << "[CLIENT] Failed to parse message\n";
+                recv_buffer.erase(recv_buffer.begin(), recv_buffer.begin() + full_packet);
+                continue;
+            }
+
+            // ----- Handle the message -----
+            self->processIncomingMessage(msg);
+
+            // Remove processed message
+            recv_buffer.erase(recv_buffer.begin(), recv_buffer.begin() + full_packet);
+        }
     }
 
+disconnect:
+    socket_close(self->sockfd);
     return nullptr;
 }
 
+void Client::processIncomingMessage(const Message& msg) {
+    QMetaObject::invokeMethod(
+        this,
+        [this, msg]() {
+            switch (msg.type) {
+                case MessageType::AUTH_RESPONSE:
+                    this->token = QString::fromStdString(msg.payload);
+                    nameLabel->setText(username);
+                    stack->setCurrentIndex(1);
+                    break;
+
+                case MessageType::CHAT_DELIVER: {
+
+                    // Payload format: token|username|message
+                    std::string p = msg.payload;
+                    size_t pos1 = p.find('|');
+                    size_t pos2 = p.find('|', pos1 + 1);
+
+                    if (pos1 == std::string::npos || pos2 == std::string::npos)
+                        return;
+
+                    std::string senderToken  = p.substr(0, pos1);
+                    std::string senderUser   = p.substr(pos1 + 1, pos2 - pos1 - 1);
+                    std::string senderMsg    = p.substr(pos2 + 1);
+
+                    bool fromSelf = (senderToken == token.toStdString());
+
+                    QString qUser = QString::fromStdString(senderUser);
+                    QString qMsg  = QString::fromStdString(senderMsg);
+
+                    addMessage(qUser, qMsg, fromSelf);
+
+                    break;
+                }
+
+                case MessageType::PURCHASE_RESPONSE: {
+                    QString r = QString::fromStdString(msg.payload);
+
+                    if (r.startsWith("YES")) {
+                        QStringList parts = r.split("|");
+                        this->credit_count = parts[1].toInt();
+                        QMessageBox::information(this, "Purchase", "Theme unlocked!");
+                    } else {
+                        QMessageBox::warning(this, "Purchase", "Not enough credits!");
+                    }
+                    break;
+                }
+
+                default:
+                    break;
+            }
+        },
+        Qt::QueuedConnection
+    );
+}
 
 //===================================
 // Login Screen
@@ -79,6 +174,7 @@ QWidget* Client::buildLoginScreen() {
     usernameInput->setObjectName("username-input");
     usernameInput->setPlaceholderText("Enter username");
     usernameInput->setFixedWidth(300);
+    usernameInput->setMaxLength(32);
 
     QPushButton* connectButton = new QPushButton("Connect");
     connectButton->setObjectName("connect-button");
@@ -152,7 +248,7 @@ QWidget* Client::buildChatScreen() {
     header->setSpacing(10);
 
     // USERNAME LABEL
-    QLabel* nameLabel = new QLabel("Justin");
+    nameLabel = new QLabel();
     nameLabel->setObjectName("chat-username");
     nameLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     header->addWidget(nameLabel);
@@ -206,14 +302,52 @@ QWidget* Client::buildChatScreen() {
     messageBox->setPlaceholderText("Type a message…");
     messageBox->setMinimumWidth(200);
     messageBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    messageBox->setMaxLength(256);
 
     // SEND BUTTON
     QPushButton* sendButton = new QPushButton("Send");
     sendButton->setObjectName("chat-send-button");
     sendButton->setMinimumWidth(100);
     sendButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    // --- Only allow sending when messageBox has text ---
+    sendButton->setEnabled(false);
+    connect(messageBox, &QLineEdit::textChanged, [sendButton](const QString& text) {
+        sendButton->setEnabled(!text.trimmed().isEmpty());
+    });
+
+    // --- Send button click handler ---
+    connect(sendButton, &QPushButton::clicked, [this, messageBox]() {
+
+        QString text = messageBox->text().trimmed();
+        if (text.isEmpty()) return;
+
+        // Build chat packet
+        Message msg;
+        msg.type = MessageType::CHAT_SEND;
+        msg.payload =
+            token.toStdString() + "|" +
+            std::to_string(credit_count) + "|" +
+            text.toStdString();
+
+        // Serialize and send
+        std::vector<uint8_t> data = Protocol::serialize(msg);
+        if (socket_send(sockfd, (const char*)data.data(), data.size())) {
+            credit_count += 1;
+        }
+
+        // Clear input
+        messageBox->clear();
+    });
+
+    // --- Pressing ENTER triggers the send button ---
+    connect(messageBox, &QLineEdit::returnPressed, sendButton, &QPushButton::click);
+
+    // Auto-scroll to bottom after sending
     connect(sendButton, &QPushButton::clicked, [this]() {
-        addMessage("New Message", true);
+        scroll->verticalScrollBar()->setValue(
+            scroll->verticalScrollBar()->maximum()
+        );
     });
 
     inputLayout->addWidget(messageBox);
@@ -226,6 +360,7 @@ QWidget* Client::buildChatScreen() {
     outer->addWidget(scroll, 1);     // middle gets all space
     outer->addWidget(inputWidget, 0);
 
+    /*
     // DEBUG: Preload sample messages
     addMessage("Hello, welcome to the chat!", false);
     addMessage("Hey! This is what my own messages look like.", true);
@@ -237,6 +372,7 @@ QWidget* Client::buildChatScreen() {
     addMessage("This is a longer message from myself that should align "
             "to the right and stay within 75% width.", true);
     addMessage("This is another message", false);
+    */
 
     return chatScreen;
 }
@@ -377,7 +513,7 @@ QWidget* Client::buildShopScreen() {
     return shopScreen;
 }
 
-void Client::addMessage(const QString& text, bool fromSelf) {
+void Client::addMessage(const QString& user, const QString& text, bool fromSelf) {
     // 1. MESSAGE BUBBLE (only contains the actual text)
     QLabel* msg = new QLabel(text);
     msg->setWordWrap(true);
@@ -394,7 +530,7 @@ void Client::addMessage(const QString& text, bool fromSelf) {
     bubbleLayout->addWidget(msg);
 
     // 2. METADATA ROW (UNDER the bubble)
-    QString senderName = fromSelf ? "You" : "Justin";  
+    QString senderName = fromSelf ? "You" : user;  
     QString timestamp  = QDateTime::currentDateTime().toString("hh:mm AP");
 
     QLabel* meta = new QLabel(senderName + " • " + timestamp);
@@ -452,4 +588,3 @@ void Client::applyTheme(const QString& themePath) {
 
     this->setStyleSheet(style);
 }
-
