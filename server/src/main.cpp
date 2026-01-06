@@ -1,5 +1,5 @@
-#include "../../common/include/socket_handler.hpp"
-#include "../../common/include/thread_handler.hpp"
+#include "../../shared/include/socket_handler.hpp"
+#include "../../shared/include/thread_handler.hpp"
 #include "../include/client_thread.hpp"
 #include <iostream>
 

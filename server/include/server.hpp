@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "../../common/include/socket_handler.hpp"
-#include "../../common/include/thread_handler.hpp"
-#include "../../common/include/protocol.hpp"
+#include "../../shared/include/socket_handler.hpp"
+#include "../../shared/include/thread_handler.hpp"
+#include "../../shared/include/protocol.hpp"
 
 // Forward declaration
 struct ClientConnection;

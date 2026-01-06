@@ -1,13 +1,13 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Iinclude -I../common
+CXXFLAGS = -std=c++17 -Wall -Iinclude -I../shared
 
 OBJ = \
     src/main.o \
     src/client_thread.o \
     src/server.o \
-    ../common/src/protocol.o \
-    ../common/src/socket_handler.o \
-    ../common/src/thread_handler.o
+    ../shared/src/protocol.o \
+    ../shared/src/socket_handler.o \
+    ../shared/src/thread_handler.o
 
 ../bin/linux/server: $(OBJ)
 	$(CXX) $(OBJ) -o ../bin/linux/server -pthread
@@ -15,8 +15,8 @@ OBJ = \
 src/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-../common/src/%.o: ../common/src/%.cpp
+../shared/src/%.o: ../shared/src/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f src/*.o ../common/src/*.o ../bin/linux/server
+	rm -f src/*.o ../shared/src/*.o ../bin/linux/server
