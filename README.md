@@ -1,10 +1,8 @@
 ## Secure Chatroom App in C++
-Tested on: Ubuntu 24.04 and Windows 11. We had some trouble with the 
-Windows side of things, but Linux has been thoroughly tested and proven 
-to work.
+Tested on Ubuntu 24.04
 
 ### Running on Linux
-Make the client and server side:
+Make the client GUI and server:
 ```
 make
 ```
@@ -14,10 +12,10 @@ Cleanup .o files and executables from previous makes:
 make clean
 ```
 
-Make the client only:
+Make the client GUI only:
 ```
 cd client
-make -C client
+make -C client_gui
 ```
 
 Make the server only:
