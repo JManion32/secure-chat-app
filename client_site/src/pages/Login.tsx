@@ -49,7 +49,7 @@ function Home() {
                     </p>
                     <input
                         type="text"
-                        maxLength={12}
+                        maxLength={16}
                         autoComplete="off"
                         id="name-input"
                         className={`name-input`}
