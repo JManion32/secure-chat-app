@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+# Always run from the frontend directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FRONTEND_DIR="$SCRIPT_DIR/../../client_site"
+
+echo "▶ Changing to frontend directory: $FRONTEND_DIR"
+cd "$FRONTEND_DIR"
+
 echo "▶ Building frontend..."
 npm run build
 
