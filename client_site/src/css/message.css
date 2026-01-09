@@ -3,7 +3,8 @@
 .message-container {
     display: flex;
     flex-direction: column;
-    max-width: 70%;
+    min-width: 0;
+    max-width: 70% !important;
 }
 
 .sent-message {
@@ -19,6 +20,9 @@
     padding: 0.5rem 1rem;
     border-radius: 1rem;
     font-size: 1rem;
+    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
+    max-width: 100%;
 }
 
 .sent-bubble {

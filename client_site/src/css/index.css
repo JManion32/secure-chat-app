@@ -62,6 +62,22 @@ button {
     background: var(--site-bg);
 }
 
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(92, 92, 92, 0.5);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
 *,
 *::before,
 *::after {
@@ -85,19 +101,19 @@ body {
     opacity: 0.35;
 }
 
-.temp-btn {
-    padding: 0.25rem;
-    font-size: 1rem;
+.default-btn {
     font-weight: bold;
-    border-radius: 0.5rem;
-    border: 2px solid var(--debug-orange);
-    background: var(--site-bg);
-    color: var(--standard-white);
-    transition: var(--site-transition);
+    padding: 0.50rem 1.5rem;
+    font-size: 1.1rem;
 }
 
-.temp-btn:hover {
-    background: var(--debug-orange);
-    color: var(--standard-black);
-    cursor: pointer;
+.default-btn:hover {
+  
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: var(--standard-light-gray);
+    margin: 1rem 0;
 }

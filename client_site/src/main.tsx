@@ -6,14 +6,12 @@ import './css/colors.css'
 
 import Login from './pages/Login.tsx'
 import Chat from './pages/Chat.tsx'
-import Shop from './pages/Shop.tsx'
 
 createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Routes>
             <Route path="/" element={<Login/>} />
             <Route path="/Chat" element={<Chat/>} />
-            <Route path="/Shop" element={<Shop/>} />
         </Routes>
     </BrowserRouter>
 )

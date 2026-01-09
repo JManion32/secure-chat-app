@@ -1,15 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Message from '../components/Message.tsx';
 // import SystemMessage from '../components/SystemMessage.tsx';
+import ShopPanel from '../components/ShopPanel.tsx';
 import type { ChatMessage } from '../types/ChatMessage.ts';
 
 import '../css/chat.css';
 
 function Chat() {
     const navigate = useNavigate();
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        el.scrollTop = el.scrollHeight;
+    }, [messages]);
 
     function sendMessage() {
         if (message.trim() === "") return;
@@ -31,14 +41,13 @@ function Chat() {
                     <div className="navbar-container">
                         <p className="active-count">● 3</p>
                         <button
-                            className="shop-btn"
-                            onClick={ () => navigate("/shop") }
+                            className="default-btn"
                         >
-                            Shop ➜
+                            Shop (50)
                         </button>
                     </div>
                     <hr className="nav-chat-hr"/>
-                    <div className="chat-message-container">
+                    <div className="chat-message-container" ref={containerRef}>
                         {messages.map((msg, index) => (
                             <Message
                                 key={index}
@@ -69,6 +78,7 @@ function Chat() {
                         </a>
                     </div>
                 </div>
+                <ShopPanel page={false}/>
             </div>
         </>
     );

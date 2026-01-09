@@ -1,0 +1,51 @@
+.shop-page-container {
+    min-height: 100vh;
+    min-width: 100vw;
+    background: #18181800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.shop-container {
+    margin: 1rem;
+    height: 96vh;
+    flex-grow: 1;
+    padding: 1.5rem 2rem;
+
+    display: flex;
+    flex-direction: column;
+    flex: none;
+
+    background: #1f1f1f;
+    border: 1px solid var(--standard-light-gray);
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.shop-panel-container {
+    width: 36rem;
+}
+
+.shop-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 0.25rem;
+}
+
+.token-count {
+    font-weight: bold;
+    font-size: 1.40rem;
+    color: var(--standard-white);
+    margin: 0;
+    padding: 0;
+    align-self: center;
+    margin-left: auto;
+}

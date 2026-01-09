@@ -12,7 +12,7 @@ function Shop() {
     return (
         <>
             <div className={`shop-page-container`}>
-                <ShopPanel/>
+                <ShopPanel page={false}/>
             </div>
         </>
     );

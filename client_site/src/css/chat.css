@@ -12,7 +12,6 @@
 
     display: flex;
     flex-direction: row;
-    gap: 1rem;
 }
 
 .chat-content-container {
@@ -28,6 +27,7 @@
     border: 1px solid var(--standard-light-gray);
     border-radius: 1rem;
     overflow: hidden;
+    max-width: auto;
 }
 
 /* ====================== */
@@ -52,19 +52,6 @@
     align-self: center;
 }
 
-.shop-btn {
-    font-weight: bold;
-    padding: 0.50rem 1.5rem;
-    font-size: 1.1rem;
-}
-
-.nav-chat-hr {
-    border: none;
-    height: 1px;
-    background-color: var(--standard-light-gray);
-    margin: 1rem 0;
-}
-
 /* ====================== */
 /* CHAT AREA */
 /* ====================== */
@@ -72,10 +59,12 @@
 .chat-message-container {
     height: 90%;
     flex-grow: 1;
+    overflow-y: auto;
 
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    padding: 1rem;
 }
 
 /* ====================== */
