@@ -127,13 +127,10 @@
 .send-btn {
     font-size: 2rem;
     padding: 0.25rem 0.50rem 0.25rem 1rem;
-}
-
-.send-btn:hover {
-    color: var(--light-green);
     transition: var(--site-transition);
 }
 
 .send-btn:hover {
+    color: var(--light-green);
     cursor: pointer;
 }

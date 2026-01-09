@@ -64,7 +64,7 @@
     cursor: pointer;
     transition: var(--site-transition);
     color: var(--light-green);
-    border: 1px solid var(--light-green);
+    border: 2px solid var(--light-green);
 }
 
 .start-btn:focus,

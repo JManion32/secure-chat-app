@@ -85,7 +85,7 @@ function Chat() {
                                 }
                             }}
                         />
-                        <a className="send-btn" onClick={sendMessage}>
+                        <a className={`send-btn ${message !== '' ? '' : 'disabled'}`} onClick={sendMessage}>
                             ⌲
                         </a>
                     </div>
