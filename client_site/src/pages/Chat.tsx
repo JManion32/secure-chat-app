@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Message from '../components/Message.tsx';
+// import SystemMessage from '../components/SystemMessage.tsx';
 import type { ChatMessage } from '../types/ChatMessage.ts';
 
 import '../css/chat.css';
@@ -37,7 +38,7 @@ function Chat() {
                         </button>
                     </div>
                     <hr className="nav-chat-hr"/>
-                    <div className="chat-container">
+                    <div className="chat-message-container">
                         {messages.map((msg, index) => (
                             <Message
                                 key={index}
