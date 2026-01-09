@@ -45,3 +45,12 @@
     padding: 0;
     margin: 0 0 0 auto;
 }
+
+.coming-soon {
+    font-weight: bold;
+    border: 2px solid var(--light-green);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    color: var(--light-green);
+}

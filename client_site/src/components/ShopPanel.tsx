@@ -16,11 +16,16 @@ function ShopPanel() {
                 <hr/>
                 <div>
                     <h2>Themes</h2>
+                    <div className="coming-soon">
+                        Coming Soon!
+                    </div>
                 </div>
                 <hr/>
                 <div>
                     <h2>Banners</h2>
-                    <p><i>Coming soon!</i></p>
+                    <div className="coming-soon">
+                        Coming Soon!
+                    </div>
                 </div>
             </div>
         </>
