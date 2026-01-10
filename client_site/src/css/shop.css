@@ -49,12 +49,10 @@
 }
 
 .nav-category-toggled {
-    text-decoration: underline;
     color: var(--light-green);
 }
 
 .nav-category-toggled:hover {
-    text-decoration: underline;
     color: var(--light-green) !important;
 }
 
@@ -70,11 +68,11 @@
 .coming-soon {
     margin-top: 2rem;
     font-weight: bold;
-    border: 2px solid var(--standard-white);
+    border: 1px solid var(--standard-dim-white);
     border-radius: 1rem;
     padding: 1rem 1.5rem;
     font-size: 1.1rem;
-    color: var(--standard-white);
+    color: var(--standard-dim-white);
 }
 
 .center-theme {
