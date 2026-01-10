@@ -6,7 +6,9 @@
 
 #include "../../shared/include/socket_handler.hpp"
 #include "../../shared/include/thread_handler.hpp"
-#include "../../shared/include/protocol.hpp"
+
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 void* client_thread(void* arg);
 
@@ -14,21 +16,21 @@ void* client_thread(void* arg);
 extern std::vector<Client> global_clients;
 extern pthread_mutex_t global_clients_mutex;
 
-void broadcastMessage(const Message& msg);
+void broadcastMessage(const json& msg);
 void removeClient(SocketType sock);
 
 //====================================================
 // AUTH REQUEST
 //====================================================
-void handleAuthRequest(SocketType client_fd, const std::string& username);
+void handleAuthRequest(SocketType client_fd, const json& payload);
 std::string generateToken();
 
 //====================================================
 // SEND CHAT
 //====================================================
-void handleChatSend(SocketType client_fd, const std::string& payload);
+void handleChatRequest(SocketType client_fd, const json& payload);
 
 //====================================================
 // PURCHASE REQUEST
 //====================================================
-void handlePurchaseRequest(SocketType client_fd, const std::string& payload);
+void handlePurchaseRequest(SocketType client_fd, const json& payload);

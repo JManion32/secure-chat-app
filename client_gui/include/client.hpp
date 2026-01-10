@@ -18,8 +18,10 @@
 
 #include "../../shared/include/socket_handler.hpp"
 #include "../../shared/include/thread_handler.hpp"
-#include "../../shared/include/protocol.hpp"
 #include "themes.hpp"
+
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class Client : public QMainWindow {
 
@@ -40,7 +42,7 @@ private:
     int port;
     ThreadType recvThread;
     static void* recv_loop(void* arg);
-    void processIncomingMessage(const Message& msg);
+    void processIncomingMessage(const json& msg);
 
     // Client Information
     QString username;

@@ -7,12 +7,11 @@ std::vector<Client> global_clients;
 pthread_mutex_t global_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Send message to all connected clients
-void broadcastMessage(const Message& msg) {
-    std::vector<uint8_t> data = Protocol::serialize(msg);
-
+void broadcastMessage(const json& response) {
     pthread_mutex_lock(&global_clients_mutex);
     for (auto& c : global_clients) {
-        socket_send(c.getSockfd(), reinterpret_cast<const char*>(data.data()), data.size());
+        std::string out = response.dump();
+        sendFrame(c.getSockfd(), out);
     }
     pthread_mutex_unlock(&global_clients_mutex);
 }
@@ -39,178 +38,188 @@ Client* getClientByFD(SocketType fd) {
 //====================================================
 // AUTH REQUEST
 //====================================================
-void handleAuthRequest(SocketType client_fd, const std::string& username) {
+void handleAuthRequest(SocketType client_fd, const json& payload) {
+    // Validate payload
+    if (!payload.contains("name") || !payload["name"].is_string()) {
+        std::cerr << "[AUTH] ERROR: missing or invalid username" << std::endl;
+        return;
+    }
+
     pthread_mutex_lock(&global_clients_mutex);
 
     Client* client = getClientByFD(client_fd);
     if (!client) {
         pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[SERVER] AUTH_REQUEST: Client not found\n";
+        std::cerr << "[AUTH] ERROR: Client not found" << std::endl;
         return;
     }
 
+    client->setName(payload["name"]);
     pthread_mutex_unlock(&global_clients_mutex);
+    std::cout << "[AUTH] SUCCESS: user= " << client->getName() << " token= " << client->getToken() << std::endl;
 
-    std::cout << "[SERVER] AUTH: user='" << username 
-              << "' token=" << client->getToken() << " credits=" << client->getCredits() << "\n";
+    // Build AUTH_RESPONSE JSON
+    json response = {
+        {"type", "auth.response"},
+        {"payload", {
+            {"success", true},
+            {"token", client->getToken()},
+            {"credits", client->getCredits()}
+        }}
+    };
 
-    // Build AUTH_RESPONSE
-    Message resp(MessageType::AUTH_RESPONSE, client->getToken());
-    auto bytes = Protocol::serialize(resp);
-    socket_send(client_fd, (const char*)bytes.data(), bytes.size());
+    std::string out = response.dump();
+    sendFrame(client_fd, out);
 }
+
 
 //====================================================
 // SEND CHAT
 //====================================================
-void handleChatSend(SocketType client_fd, const std::string& payload) {
-    // Expected payload format:
-    // "<token>|<credits>|<message>"
-
-    size_t pos1 = payload.find('|');
-    size_t pos2 = payload.find('|', pos1 + 1);
-
-    if (pos1 == std::string::npos || pos2 == std::string::npos) {
-        std::cerr << "[SERVER] CHAT_SEND: Invalid payload\n";
-        return;
-    }
-
-    std::string token  = payload.substr(0, pos1);
-    int clientCredits  = std::stoi(payload.substr(pos1 + 1, pos2 - pos1 - 1));
-    std::string message = payload.substr(pos2 + 1);
+void handleChatRequest(SocketType client_fd, const json& payload) {
 
     pthread_mutex_lock(&global_clients_mutex);
 
     Client* client = getClientByFD(client_fd);
     if (!client) {
         pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[SERVER] CHAT_SEND: Client not found\n";
+        std::cerr << "[CHAT] ERROR: Client not found" << std::endl;
         return;
     }
 
-    // Validate token
-    if (client->getToken() != token) {
+    if (client->getToken() != payload["token"]) {
         pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[SERVER] CHAT_SEND: Invalid token\n";
+        std::cerr << "[CHAT] ERROR: Invalid token" << std::endl;
         return;
     }
 
-    // Validate credit count matches
-    if (client->getCredits() != clientCredits) {
+    if (client->getCredits() != payload["credits"]) {
         pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[SERVER] CHAT_SEND: Credit mismatch\n";
+        std::cerr << "[CHAT] ERROR: Credit mismatch" << std::endl;
         return;
     }
 
     // OK — increase credits on server
     client->incrementCredits();
-
     std::string username = client->getName();
-
     pthread_mutex_unlock(&global_clients_mutex);
 
-    std::cout << "[SERVER] CHAT from " << username << ": " << message
-              << " (new credits=" << client->getCredits() << ")\n";
+    std::cout << "[CHAT] SUCCESS: from " << username << std::endl;
 
-    // Build the message to broadcast
-    Message outgoing(MessageType::CHAT_DELIVER, client->getToken() + "|" + username + "|" + message);
+    std::string content = payload["content"];
 
-    broadcastMessage(outgoing);
+    // Build CHAT_RESPONSE JSON
+    json response = {
+        {"type", "chat.response"},
+        {"payload", {
+            {"name", client->getName()},
+            {"content", payload["content"]}
+        }}
+    };
+
+    broadcastMessage(response);
 }
 
 
 //====================================================
 // PURCHASE REQUEST
 //====================================================
-void handlePurchaseRequest(SocketType client_fd, const std::string& payload) {
-    // Expected: "<token>|<credits>|<item_id>"
-    std::vector<std::string> parts;
-    size_t start = 0, end;
-
-    while ((end = payload.find('|', start)) != std::string::npos) {
-        parts.push_back(payload.substr(start, end - start));
-        start = end + 1;
-    }
-    parts.push_back(payload.substr(start));
-
-    if (parts.size() != 3) {
-        std::cerr << "[SERVER] PURCHASE_REQUEST: Invalid payload format\n";
-        return;
-    }
-
-    std::string token = parts[0];
-    int clientCredits = std::stoi(parts[1]);
-    int itemIndex     = std::stoi(parts[2]);
-
-    // Prices (server authoritative)
+void handlePurchaseRequest(SocketType client_fd, const json& payload) {
     const int prices[9] = {0, 0, 25, 50, 75, 100, 150, 200, 100000};
 
-    if (itemIndex < 0 || itemIndex >= 9) {
-        std::cerr << "[SERVER] PURCHASE_REQUEST: Invalid itemIndex\n";
+    if (payload["index"] < 0 || payload["index"] >= 9) {
+        std::cerr << "[PURCHASE] ERROR: Invalid itemIndex" << std::endl;
         return;
     }
-
-    int price = prices[itemIndex];
 
     pthread_mutex_lock(&global_clients_mutex);
 
     Client* client = getClientByFD(client_fd);
     if (!client) {
         pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[SERVER] PURCHASE: Client not found\n";
+        std::cerr << "[PURCHASE] ERROR: Client not found" << std::endl;
         return;
     }
 
     // Validate token
-    if (client->getToken() != token) {
+    if (client->getToken() != payload["token"]) {
         pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[SERVER] PURCHASE: Token mismatch\n";
+        std::cerr << "[PURCHASE ERROR: Token mismatch" <<std::endl;
         return;
     }
 
     // Validate credits
-    if (client->getCredits() != clientCredits) {
+    if (client->getCredits() != payload["credits"]) {
         pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[SERVER] PURCHASE: Credit mismatch\n";
+        std::cerr << "[PURCHASE] ERROR: Credit mismatch" << std::endl;
         return;
     }
 
     // Check if already owned
-    if (client->isThemeOwned(itemIndex)) {
+    if (client->isThemeOwned(payload["index"])) {
         pthread_mutex_unlock(&global_clients_mutex);
+        json response = {
+            {"type", "purchase.response"},
+            {"payload", {
+                {"success", false}
+            }}
+        };
+        std::string out = response.dump();
+        sendFrame(client_fd, out);
+        return;
+    }
 
-        Message resp(MessageType::PURCHASE_RESPONSE, "NO|OWNED");
+    if (!payload.contains("index") || !payload["index"].is_number_integer()) {
+        std::cerr << "[PURCHASE] ERROR: Invalid index" <<std::endl;
+        return;
+    }
 
-        auto data = Protocol::serialize(resp);
-        socket_send(client_fd, (char*)data.data(), data.size());
+    int index = payload["index"];
+
+    if (index < 0 || index >= 9) {
+        std::cerr << "[PURCHASE] ERROR: Index out of bounds" << std::endl;
+        return;
+    }
+
+    if (client->getCredits() < prices[index]) {
+        std::cerr << "[PURCHASE] ERROR: Not enough credits" << std::endl;
         return;
     }
 
     // Check affordability
-    if (client->getCredits() < price) {
+    if (client->getCredits() < prices[index]) {
         pthread_mutex_unlock(&global_clients_mutex);
-
-        Message resp(MessageType::PURCHASE_RESPONSE, "NO|CREDITS");
-
-        auto data = Protocol::serialize(resp);
-        socket_send(client_fd, (char*)data.data(), data.size());
+        json response = {
+            {"type", "purchase.response"},
+            {"payload", {
+                {"success", false}
+            }}
+        };
+        std::string out = response.dump();
+        sendFrame(client_fd, out);
         return;
     }
 
     // SUCCESS: deduct credits and mark owned
-    client->subtractPrice(price);
-    client->ownTheme(itemIndex);
+    client->subtractPrice(prices[index]);
+    client->ownTheme(payload["index"]);
 
     int newCredits = client->getCredits();
 
     pthread_mutex_unlock(&global_clients_mutex);
 
-    std::cout << "[SERVER] PURCHASE OK: item=" << itemIndex
-              << " new credits=" << newCredits << "\n";
+    std::cout << "[PURCHASE] SUCCESS: item=" << payload["index"] << " new credits=" << newCredits << std::endl;
 
-    // SUCCESS PAYLOAD: YES|itemIndex|newCredits
-    Message resp(MessageType::PURCHASE_RESPONSE, "YES|" + std::to_string(itemIndex) + "|" + std::to_string(newCredits));
+    // SUCCESS PAYLOAD
+    json response = {
+        {"type", "purchase.response"},
+        {"payload", {
+            {"success", true},
+            {"index", payload["index"]},
+            {"credits", newCredits}
+        }}
+    };
 
-    auto data = Protocol::serialize(resp);
-    socket_send(client_fd, (char*)data.data(), data.size());
+    std::string out = response.dump();
+    sendFrame(client_fd, out);
 }

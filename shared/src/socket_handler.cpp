@@ -1,5 +1,4 @@
 #include "../include/socket_handler.hpp"
-#include <cstring>
 
 SocketType socket_create() {
 #ifdef _WIN32
@@ -76,3 +75,16 @@ void socket_close(SocketType sock) {
 #endif
 }
 
+bool sendFrame(SocketType sock, const std::string& json) {
+    uint32_t len = htonl(static_cast<uint32_t>(json.size()));
+
+    // send length prefix
+    if (socket_send(sock, &len, sizeof(len)) != sizeof(len))
+        return false;
+
+    // send JSON body
+    if (socket_send(sock, json.data(), json.size()) != (int)json.size())
+        return false;
+
+    return true;
+}

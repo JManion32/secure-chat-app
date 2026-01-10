@@ -11,6 +11,7 @@
     #include <unistd.h>
     typedef int SocketType;
 #endif
+#include <string>
 
 // Client
 bool socket_connect(SocketType sock, const char* ip, int port);
@@ -25,3 +26,6 @@ SocketType socket_accept(SocketType server);
 int socket_recv(SocketType sock, void* buffer, int len);
 int socket_send(SocketType sock, const void* data, int len);
 void socket_close(SocketType sock);
+
+// Length-prefixed JSON send
+bool sendFrame(SocketType sock, const std::string& json);

@@ -15,7 +15,6 @@ OBJ = \
     src/main.o \
     src/client.o \
     src/themes.o \
-    ../shared/src/protocol.o \
     ../shared/src/socket_handler.o \
     ../shared/src/thread_handler.o
 

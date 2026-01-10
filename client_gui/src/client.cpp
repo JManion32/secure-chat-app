@@ -42,7 +42,7 @@ void* Client::recv_loop(void* arg) {
         int bytes = socket_recv(self->sockfd, reinterpret_cast<char*>(temp), sizeof(temp));
 
         if (bytes <= 0) {
-            std::cout << "[CLIENT] Server disconnected\n";
+            std::cout << "[CLIENT] Server disconnected" << std::endl;
             break;
         }
 
@@ -57,30 +57,39 @@ void* Client::recv_loop(void* arg) {
             std::memcpy(&body_len_be, recv_buffer.data(), 4);
             uint32_t body_len = ntohl(body_len_be);
 
-            if (body_len < 1) {
-                std::cerr << "[CLIENT] Invalid body length\n";
+            if (body_len == 0 || body_len > 1024 * 1024) {
+                std::cerr << "[CLIENT] Invalid body length" << std::endl;
                 goto disconnect;
             }
 
             size_t full_packet = 4 + body_len;
-
             if (recv_buffer.size() < full_packet)
                 break;
 
-            // Extract the message body
-            const uint8_t* body_ptr = recv_buffer.data() + 4;
+            // Extract JSON body
+            const char* json_ptr = reinterpret_cast<const char*>(recv_buffer.data() + 4);
 
-            Message msg;
-            if (!Protocol::deserialize(body_ptr, body_len, msg)) {
-                std::cerr << "[CLIENT] Failed to parse message\n";
-                recv_buffer.erase(recv_buffer.begin(), recv_buffer.begin() + full_packet);
-                continue;
+            std::string json_str(json_ptr, body_len);
+
+            try {
+                json msg = json::parse(json_str);
+
+                if (!msg.contains("type") || !msg["type"].is_string()) {
+                    std::cerr << "[CLIENT] Missing or invalid type field" << std::endl;
+                }
+                else if (!msg.contains("payload") || !msg["payload"].is_object()) {
+                    std::cerr << "[CLIENT] Missing or invalid payload field" << std::endl;
+                }
+                else {
+                    std::string type = msg["type"];
+                    self->processIncomingMessage(msg);
+                }
+
+            } catch (const std::exception& e) {
+                std::cerr << "[CLIENT] JSON parse error: " << e.what() << std::endl;
             }
 
-            // ----- Handle the message -----
-            self->processIncomingMessage(msg);
-
-            // Remove processed message
+            // Remove processed packet
             recv_buffer.erase(recv_buffer.begin(), recv_buffer.begin() + full_packet);
         }
     }
@@ -91,86 +100,57 @@ disconnect:
 }
 
 // Process the incoming message from the server, and update the UI accordingly
-void Client::processIncomingMessage(const Message& msg) {
+void Client::processIncomingMessage(const json& msg) {
     QMetaObject::invokeMethod(
         this,
         [this, msg]() {
-            switch (msg.getType()) {
-                case MessageType::AUTH_RESPONSE:
-                    this->token = QString::fromStdString(msg.getPayload());
-                    nameLabel->setText(username);
-                    stack->setCurrentIndex(1);
-                    break;
+            // AUTH RESPONSE
+            if (msg["type"] == "auth.response") {
+                std::string token = msg["payload"].value("token", "");
+                this->token = QString::fromStdString(token);
+                nameLabel->setText(username);
+                stack->setCurrentIndex(1);
+            }
+            // CHAT RESPONSE
+            else if (msg["type"] == "chat.response") {
+                bool fromSelf = (username == QString::fromStdString(msg["payload"].value("name", "")));
 
-                case MessageType::CHAT_DELIVER: {
-                    // Payload format: token|username|message
-                    std::string p = msg.getPayload();
-                    size_t pos1 = p.find('|');
-                    size_t pos2 = p.find('|', pos1 + 1);
+                std::string user = msg["payload"].value("name", "");
+                std::string text = msg["payload"].value("content", "");
 
-                    if (pos1 == std::string::npos || pos2 == std::string::npos)
-                        return;
+                QString qUser = QString::fromStdString(user);
+                QString qMsg  = QString::fromStdString(text);
 
-                    std::string senderToken  = p.substr(0, pos1);
-                    std::string senderUser   = p.substr(pos1 + 1, pos2 - pos1 - 1);
-                    std::string senderMsg    = p.substr(pos2 + 1);
-
-                    bool fromSelf = (senderToken == token.toStdString());
-
-                    QString qUser = QString::fromStdString(senderUser);
-                    QString qMsg  = QString::fromStdString(senderMsg);
-
-                    // Only increment local credits if WE sent this message
-                    if (fromSelf) {
-                        credit_count += 1;
-                        shopButton->setText("Theme Shop (" + QString::number(credit_count) + ")");
-                        if (creditLabel) {
-                            creditLabel->setText("Credits: " + QString::number(credit_count));
-                        }
+                if (fromSelf) {
+                    credit_count += 1;
+                    shopButton->setText("Theme Shop (" + QString::number(credit_count) + ")");
+                    if (creditLabel) {
+                        creditLabel->setText("Credits: " + QString::number(credit_count));
                     }
-
-                    addMessage(qUser, qMsg, fromSelf);
-                    break;
                 }
 
-                case MessageType::PURCHASE_RESPONSE: {
-                    QString r = QString::fromStdString(msg.getPayload());
+                addMessage(qUser, qMsg, fromSelf);
+            }
+            // PURCHASE RESPONSE
+            else if (msg["type"] == "purchase.response") {
+                if (msg["payload"]["success"]) {
+                    this->credit_count = msg["payload"].value("credits", 0);
+                    int index = msg["payload"].value("index", 0);
+                    ownedThemes[index] = true;
 
-                    if (r.startsWith("YES")) {
-                        // Expected format: YES|<itemID>|<newCredits>
-                        QStringList parts = r.split("|");
-                        if (parts.size() >= 3) {
-                            int itemID      = parts[1].toInt();
-                            int newCredits  = parts[2].toInt();
-
-                            credit_count = newCredits;
-                            ownedThemes[itemID] = true;
-
-                            if (shopButton) {
-                                shopButton->setText(QString("Theme Shop (%1)").arg(credit_count));
-                            }
-
-                            if (creditLabel) {
-                                creditLabel->setText("Credits: " + QString::number(credit_count));
-                            }
-
-                            if (itemID >= 0 && itemID < (int)themeButtons.size() && themeButtons[itemID]) {
-                                themeButtons[itemID]->setText("Enable");
-                            }
-
-                            QMessageBox::information(this, "Purchase", "Theme unlocked!");
-                        } else {
-                            QMessageBox::warning(this, "Purchase", "Purchase response malformed.");
-                        }
-                    } else {
-                        // NO or error message, don’t leave button permanently disabled
-                        QMessageBox::warning(this, "Purchase", "Purchase failed: " + r);
+                    if (shopButton) {
+                        shopButton->setText(QString("Theme Shop (%1)").arg(credit_count));
                     }
-                    break;
-                }
 
-                default:
-                    break;
+                    if (creditLabel) {
+                        creditLabel->setText("Credits: " + QString::number(credit_count));
+                    }
+                    themeButtons[msg["payload"]["index"]]->setText("Enable");
+                    QMessageBox::information(this, "Purchase", "Theme unlocked!");
+                }
+                else {
+                    QMessageBox::warning(this, "Purchase", "Purchase failed");
+                }
             }
         },
         Qt::QueuedConnection
@@ -228,12 +208,17 @@ QWidget* Client::buildLoginScreen() {
             return;
         }
 
-        // Build AUTH_REQUEST
         this->username = usernameInput->text();
-        Message authMsg(MessageType::AUTH_REQUEST, username.toStdString());
 
-        auto data = Protocol::serialize(authMsg);
-        socket_send(sockfd, (const char*)data.data(), data.size());
+        // Build AUTH_REQUEST
+        json request = {
+            {"type", "auth.request"},
+            {"payload", {
+                {"name", this->username.toStdString()}
+            }}
+        };
+        std::string out = request.dump();
+        sendFrame(sockfd, out);
 
         recvThread = thread_create(Client::recv_loop, this);
         thread_detach(recvThread);
@@ -352,12 +337,17 @@ QWidget* Client::buildChatScreen() {
         QString text = messageBox->text().trimmed();
         if (text.isEmpty()) return;
 
-        // Build chat packet
-        Message msg(MessageType::CHAT_SEND, token.toStdString() + "|" + std::to_string(credit_count) + "|" + text.toStdString());
-
-        // Serialize and send
-        std::vector<uint8_t> data = Protocol::serialize(msg);
-        socket_send(sockfd, (const char*)data.data(), data.size());
+        // Build CHAT_REQUEST
+        json request = {
+            {"type", "chat.request"},
+            {"payload", {
+                {"token", token.toStdString()},
+                {"content", text.toStdString()},
+                {"credits", credit_count},
+            }}
+        };
+        std::string out = request.dump();
+        sendFrame(sockfd, out);
 
         // Clear input
         messageBox->clear();
@@ -379,22 +369,8 @@ QWidget* Client::buildChatScreen() {
     // ADD ALL SECTIONS TO MAIN LAYOUT
     //===================================
     outer->addWidget(headerWidget, 0);
-    outer->addWidget(scroll, 1);     // middle gets all space
+    outer->addWidget(scroll, 1);
     outer->addWidget(inputWidget, 0);
-
-    /*
-    // DEBUG: PurchasedPreload sample messages
-    addMessage("Hello, welcome to the chat!", false);
-    addMessage("Hey! This is what my own messages look like.", true);
-    addMessage("Testing long messages to make sure wrapping works. "
-            "This should take up multiple lines depending on the window size. "
-            "Qt should wrap it correctly.", false);
-    addMessage("Another message from me, right aligned!", true);
-    addMessage("Short one.", false);
-    addMessage("This is a longer message from myself that should align "
-            "to the right and stay within 75% width.", true);
-    addMessage("This is another message", false);
-    */
 
     return chatScreen;
 }
@@ -529,12 +505,18 @@ QWidget* Client::buildShopScreen() {
                 return;
             }
 
-            // Not owned, send purchase request
-            Message msg(MessageType::PURCHASE_REQUEST, token.toStdString() + "|" + std::to_string(credit_count) + "|" + std::to_string(themeId));
-
-            auto data = Protocol::serialize(msg);
-            socket_send(sockfd, (char*)data.data(), data.size());
-        });
+            // Build PURCHASE_REQUEST
+            json request = {
+                {"type", "purchase.request"},
+                {"payload", {
+                    {"token", token.toStdString()},
+                    {"index", themeId},
+                    {"credits", credit_count},
+                }}
+            };
+            std::string out = request.dump();
+            sendFrame(sockfd, out);
+            });
 
         // Add widgets
         cardLayout->addWidget(img, 0, Qt::AlignHCenter);
