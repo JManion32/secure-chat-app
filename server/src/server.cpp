@@ -18,13 +18,35 @@ void broadcastMessage(const json& response) {
 
 // When a client disconnects
 void removeClient(SocketType sock) {
+    std::string name;
+
     pthread_mutex_lock(&global_clients_mutex);
-    global_clients.erase(
-        std::remove_if(global_clients.begin(), global_clients.end(),
-            [sock](const Client& client) { return client.getSockfd() == sock; }),
-        global_clients.end()
+
+    auto it = std::find_if(
+        global_clients.begin(),
+        global_clients.end(),
+        [sock](const Client& c) {
+            return c.getSockfd() == sock;
+        }
     );
+
+    if (it != global_clients.end()) {
+        name = it->getName();
+        global_clients.erase(it);
+    }
+
     pthread_mutex_unlock(&global_clients_mutex);
+    std::string name_msg = name + " has left the chat";
+
+    json response = {
+        {"type", "chat.response"},
+        {"payload", {
+            {"server", "true"},
+            {"name", name},
+            {"content", name + " has left the chat"}
+        }}
+    };
+    broadcastMessage(response);
 }
 
 Client* getClientByFD(SocketType fd) {
@@ -77,8 +99,21 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
     pthread_mutex_unlock(&global_clients_mutex);
     std::cout << "[AUTH] SUCCESS: user= " << client->getName() << " token= " << client->getToken() << std::endl;
 
+    std::string name_msg = payload["name"].get<std::string>() + " has joined the chat";
+    
+    json chat_response = {
+        {"type", "chat.response"},
+        {"payload", {
+            {"server", "true"},
+            {"name", payload["name"]},
+            {"content", name_msg}
+        }}
+    };
+
+    broadcastMessage(chat_response);
+
     // Build AUTH_RESPONSE JSON
-    json response = {
+    json auth_response = {
         {"type", "auth.response"},
         {"payload", {
             {"success", "true"},
@@ -88,7 +123,7 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
         }}
     };
 
-    std::string out = response.dump();
+    std::string out = auth_response.dump();
     sendFrame(client_fd, out);
 }
 
@@ -134,6 +169,7 @@ void handleChatRequest(SocketType client_fd, const json& payload) {
     json response = {
         {"type", "chat.response"},
         {"payload", {
+            {"server", "false"},
             {"name", client->getName()},
             {"content", payload["content"]}
         }}

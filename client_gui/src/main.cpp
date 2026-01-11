@@ -5,8 +5,8 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    const std::string SERVER_IP = "127.0.0.1";
-    //const std::string SERVER_IP = "165.227.182.111";
+    //const std::string SERVER_IP = "127.0.0.1";
+    const std::string SERVER_IP = "165.227.182.111";
     const int SERVER_PORT = 5000;
 
     QString initialStyle = MAIN_QSS + "\n";
