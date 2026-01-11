@@ -34,12 +34,12 @@ void removeClient(SocketType sock) {
     if (it != global_clients.end()) {
         name = it->getName();
         global_clients.erase(it);
+        active_count = active_count - 1;
+        std::cout << "New active count: " << active_count << std::endl;
     }
 
     pthread_mutex_unlock(&global_clients_mutex);
     std::string name_msg = name + " left the chat";
-    active_count = active_count - 1;
-    std::cout << "New active count: " << active_count << std::endl;
 
     json response = {
         {"type", "chat.response"},
