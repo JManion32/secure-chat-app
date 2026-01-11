@@ -31,10 +31,9 @@
     font-weight: bold;
     margin-top: 1.25rem;
     margin-bottom: 0.45rem;
-}
-
-.hide-error {
-    visibility: hidden;
+    font-size: 1.1rem;
+    line-height: 1.25;
+    min-height: 1.25em;
 }
 
 .name-input {

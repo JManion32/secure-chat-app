@@ -49,9 +49,28 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
 
     Client* client = getClientByFD(client_fd);
     if (!client) {
-        pthread_mutex_unlock(&global_clients_mutex);
-        std::cerr << "[AUTH] ERROR: Client not found" << std::endl;
-        return;
+            pthread_mutex_unlock(&global_clients_mutex);
+            std::cerr << "[AUTH] ERROR: Client not found" << std::endl;
+            return;
+    }
+
+    for (Client client : global_clients) {
+        if (client.getName() == payload["name"]) {
+            std::cout << client.getName() << " === " << payload["name"] << std::endl;
+            pthread_mutex_unlock(&global_clients_mutex);
+            std::cerr << "[AUTH] ERROR: Client name already used" << std::endl;
+            json response = {
+                {"type", "auth.response"},
+                {"payload", {
+                    {"success", "false"},
+                    {"name", payload["name"]},
+                    {"token", ""}
+                }}
+            };
+            std::string out = response.dump();
+            sendFrame(client_fd, out);
+            return;
+        }
     }
 
     client->setName(payload["name"]);
@@ -62,6 +81,7 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
     json response = {
         {"type", "auth.response"},
         {"payload", {
+            {"success", "true"},
             {"name", client->getName()},
             {"token", client->getToken()}
             /*{"credits", client->getCredits()}*/

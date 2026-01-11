@@ -9,11 +9,14 @@ import MatrixCanvas from '../components/MatrixCanvas.tsx';
 
 type LoginProps = {
     gateway: React.MutableRefObject<any>;
+    success: string;
+    chosen_name: string;
 };
 
-function Login({ gateway }: LoginProps) {
+function Login({ gateway, success, chosen_name }: LoginProps) {
     const navigate = useNavigate();
-    const [isBadName, setIsBadName] = useState(false);
+    const [badNameMessage, setBadNameMessage] = useState('');
+    const [joinAttempt, setJoinAttempt] = useState(0);
 
     const [copied, setCopied] = useState(false);
     const handleCopy = () => {
@@ -33,18 +36,34 @@ function Login({ gateway }: LoginProps) {
     function start() {
         if (badName(name)) {
             setName('');
-            setIsBadName(true);
+            setBadNameMessage('Please choose a clean username!');
             return;
         }
-        setIsBadName(false);
+
+        setBadNameMessage('');
+
+        setJoinAttempt(a => a + 1);
+
         gateway.current?.send({
             type: "auth.request",
-            payload: {
-                name: name,
-            }
+            payload: { name }
         });
-        navigate("/chat")
     }
+
+
+    useEffect(() => {
+        if (joinAttempt === 0) return;
+
+        if (success === "false") {
+            setBadNameMessage(`The username ${chosen_name} is already in use.`);
+            setName('');
+        }
+
+        if (success === "true") {
+            navigate("/chat");
+        }
+    }, [success, joinAttempt]);
+
 
     return (
         <>
@@ -54,8 +73,8 @@ function Login({ gateway }: LoginProps) {
                     <h1 className="site-title">
                         cchat.fun
                     </h1>
-                    <p className={`name-error ${isBadName ? '' : 'hide-error'}`}>
-                        Please choose a clean username!
+                    <p className={`name-error`}>
+                        {badNameMessage}
                     </p>
                     <input
                         type="text"
