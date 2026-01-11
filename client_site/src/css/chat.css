@@ -74,11 +74,11 @@
 }
 
 .active-count {
-    color: var(--light-green);
+    color: var(--standard-white);
 }
 
-.active-count span {
-    color: var(--standard-white);
+.active-dot{
+    color: var(--light-green);
 }
 
 .shop-btn-container {

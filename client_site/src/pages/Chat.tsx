@@ -13,9 +13,10 @@ type ChatProps = {
     gateway: React.MutableRefObject<any>;
     user: string;
     token: string;
+    activeCount: number;
 };
 
-function Chat({ messages, gateway, user, token }: ChatProps) {
+function Chat({ messages, gateway, user, token, activeCount }: ChatProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [message, setMessage] = useState("");
 
@@ -54,8 +55,8 @@ function Chat({ messages, gateway, user, token }: ChatProps) {
                             <img src={logo} className="site-logo"/>
                             <p className="site-name">CChat</p>
                         </div>
-                        <button className="active-count count">
-                            ● 3
+                        <button className="count">
+                            <span className="active-dot">●</span> <span className="active-count">{activeCount}</span>
                         </button>
                         <div className="shop-btn-container">
                             <ShopModal/>
@@ -66,6 +67,7 @@ function Chat({ messages, gateway, user, token }: ChatProps) {
                         {messages.map((msg, index) => (
                             <Message
                                 key={index}
+                                server={msg.server}
                                 name={msg.name}
                                 content={msg.content}
                                 sent={msg.name === user}
