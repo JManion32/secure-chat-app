@@ -62,9 +62,9 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
     json response = {
         {"type", "auth.response"},
         {"payload", {
-            {"success", true},
-            {"token", client->getToken()},
-            {"credits", client->getCredits()}
+            {"name", client->getName()},
+            {"token", client->getToken()}
+            /*{"credits", client->getCredits()}*/
         }}
     };
 
@@ -93,6 +93,7 @@ void handleChatRequest(SocketType client_fd, const json& payload) {
         return;
     }
 
+    /*
     if (client->getCredits() != payload["credits"]) {
         pthread_mutex_unlock(&global_clients_mutex);
         std::cerr << "[CHAT] ERROR: Credit mismatch" << std::endl;
@@ -101,6 +102,7 @@ void handleChatRequest(SocketType client_fd, const json& payload) {
 
     // OK — increase credits on server
     client->incrementCredits();
+    */
     std::string username = client->getName();
     pthread_mutex_unlock(&global_clients_mutex);
 

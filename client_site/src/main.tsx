@@ -1,18 +1,11 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { createRoot } from 'react-dom/client'
+// src/main.tsx
+import { createRoot } from "react-dom/client";
+import App from "./App";
 
-import './css/index.css'
-import './css/colors.css'
-import './css/scaling.css'
+import "./css/index.css";
+import "./css/colors.css";
+import "./css/scaling.css";
 
-import Login from './pages/Login.tsx'
-import Chat from './pages/Chat.tsx'
-
-createRoot(document.getElementById('root')!).render(
-      <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<Login/>} />
-            <Route path="/Chat" element={<Chat/>} />
-        </Routes>
-    </BrowserRouter>
-)
+createRoot(document.getElementById("root")!).render(
+  <App />
+);

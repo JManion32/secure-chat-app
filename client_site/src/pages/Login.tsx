@@ -7,7 +7,11 @@ import '../css/index.css';
 import { badName } from '../utils/checkName.ts';
 import MatrixCanvas from '../components/MatrixCanvas.tsx';
 
-function Home() {
+type LoginProps = {
+    gateway: React.MutableRefObject<any>;
+};
+
+function Login({ gateway }: LoginProps) {
     const navigate = useNavigate();
     const [isBadName, setIsBadName] = useState(false);
 
@@ -33,6 +37,12 @@ function Home() {
             return;
         }
         setIsBadName(false);
+        gateway.current?.send({
+            type: "auth.request",
+            payload: {
+                name: name,
+            }
+        });
         navigate("/chat")
     }
 
@@ -94,4 +104,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default Login;

@@ -1,41 +1,48 @@
 import { useState, useEffect, useRef } from 'react';
 import Message from '../components/Message.tsx';
 import ShopModal from '../components/ShopModal.tsx';
-import SystemMessage from '../components/SystemMessage.tsx';
+// import SystemMessage from '../components/SystemMessage.tsx';
 import ShopPanel from '../components/ShopPanel.tsx';
 import type { ChatMessage } from '../types/ChatMessage.ts';
 import logo from '../assets/logo.svg';
 
 import '../css/chat.css';
 
-function Chat() {
+type ChatProps = {
+    messages: ChatMessage[];
+    gateway: React.MutableRefObject<any>;
+    user: string;
+    token: string;
+};
+
+function Chat({ messages, gateway, user, token }: ChatProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
-
     const [message, setMessage] = useState("");
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
 
+    // Auto-scroll when messages update
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
-
         el.scrollTop = el.scrollHeight;
     }, [messages]);
 
     function sendMessage() {
         if (message.trim() === "") return;
 
-        const newMessage = {
-            name: "",
-            content: message,
-            sent: true,
-        };
+        gateway.current?.send({
+            type: "chat.request",
+            payload: {
+                content: message,
+                token: token
+            }
+        });
 
-        setMessages(prev => [...prev, newMessage]);
         setMessage("");
     }
 
     function goToPortfolio() {
-        window.location.href = 'https://justinmanion.com/projects/securechatroom';
+        window.location.href =
+        "https://justinmanion.com/projects/securechatroom";
     }
 
     return (
@@ -61,15 +68,9 @@ function Chat() {
                                 key={index}
                                 name={msg.name}
                                 content={msg.content}
-                                sent={msg.sent}
+                                sent={msg.name === user}
                             />
                         ))}
-                        <Message
-                            name="George Washington"
-                            content="The unanimous Declaration of the thirteen united States of America, When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature's God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation."
-                            sent={false}
-                        />
-                        <SystemMessage content="George Washington left the room"/>
                     </div>
                     <div className="input-container">
                         <input
