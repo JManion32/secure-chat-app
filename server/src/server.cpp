@@ -5,7 +5,7 @@
 
 std::vector<Client> global_clients;
 pthread_mutex_t global_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
-int active_count;
+int active_count = 0;
 
 // Send message to all connected clients
 void broadcastMessage(const json& response) {
