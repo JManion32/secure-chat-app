@@ -15,6 +15,7 @@ void* client_thread(void* arg);
 // Global list of connected clients
 extern std::vector<Client> global_clients;
 extern pthread_mutex_t global_clients_mutex;
+extern int active_clients;
 
 void broadcastMessage(const json& msg);
 void removeClient(SocketType sock);

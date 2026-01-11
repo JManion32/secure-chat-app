@@ -15,8 +15,8 @@ export default function App() {
     const [activeCount, setActiveCount] = useState(0);
 
     useEffect(() => {
-        //wsRef.current = new GatewayWS("ws://localhost:8080");
-        wsRef.current = new GatewayWS("wss://cchat.fun/ws");
+        wsRef.current = new GatewayWS("ws://localhost:8080");
+        //wsRef.current = new GatewayWS("wss://cchat.fun/ws");
 
         wsRef.current.onMessage = (msg) => {
             switch (msg.type) {
@@ -26,18 +26,10 @@ export default function App() {
                     setToken(msg.payload.token as string);
                     break;
                 case "chat.response":
-                    const { server, content } = msg.payload;
-
-                    setMessages(prev => [...prev, msg.payload]);
-
-                    if (server === "true" && typeof content === "string") {
-                        if (content.endsWith("has joined the chat")) {
-                            setActiveCount(c => c + 1);
-                        }
-                        else if (content.endsWith("has left the chat")) {
-                            setActiveCount(c => Math.max(0, c - 1));
-                        }
+                    if (typeof msg.payload.activeCount === "number") {
+                        setActiveCount(msg.payload.activeCount);
                     }
+                    setMessages(prev => [...prev, msg.payload]);
                     break;
             }
         };

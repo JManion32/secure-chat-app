@@ -5,6 +5,7 @@
 
 std::vector<Client> global_clients;
 pthread_mutex_t global_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
+int active_count;
 
 // Send message to all connected clients
 void broadcastMessage(const json& response) {
@@ -36,14 +37,17 @@ void removeClient(SocketType sock) {
     }
 
     pthread_mutex_unlock(&global_clients_mutex);
-    std::string name_msg = name + " has left the chat";
+    std::string name_msg = name + " left the chat";
+    active_count = active_count - 1;
+    std::cout << "New active count: " << active_count << std::endl;
 
     json response = {
         {"type", "chat.response"},
         {"payload", {
             {"server", "true"},
             {"name", name},
-            {"content", name + " has left the chat"}
+            {"content", name_msg},
+            {"activeCount", active_count}
         }}
     };
     broadcastMessage(response);
@@ -98,15 +102,18 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
     client->setName(payload["name"]);
     pthread_mutex_unlock(&global_clients_mutex);
     std::cout << "[AUTH] SUCCESS: user= " << client->getName() << " token= " << client->getToken() << std::endl;
+    active_count = active_count + 1;
+    std::cout << "New active count: " << active_count << std::endl;
 
-    std::string name_msg = payload["name"].get<std::string>() + " has joined the chat";
+    std::string name_msg = payload["name"].get<std::string>() + " joined the chat";
     
     json chat_response = {
         {"type", "chat.response"},
         {"payload", {
             {"server", "true"},
             {"name", payload["name"]},
-            {"content", name_msg}
+            {"content", name_msg},
+            {"activeCount", active_count}
         }}
     };
 

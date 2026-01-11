@@ -55,7 +55,7 @@ function Login({ gateway, success, chosen_name }: LoginProps) {
         if (joinAttempt === 0) return;
 
         if (success === "false") {
-            setBadNameMessage(`The username ${chosen_name} is already in use.`);
+            setBadNameMessage(`The username ${chosen_name} is taken.`);
             setName('');
         }
 
