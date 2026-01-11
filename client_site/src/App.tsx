@@ -14,7 +14,7 @@ export default function App() {
 
     useEffect(() => {
         //wsRef.current = new GatewayWS("ws://localhost:8080");
-        wsRef.current = new GatewayWS("wss://cchat.fun");
+        wsRef.current = new GatewayWS("wss://cchat.fun/ws");
 
         wsRef.current.onMessage = (msg) => {
         switch (msg.type) {
@@ -30,10 +30,6 @@ export default function App() {
 
         return () => wsRef.current?.close();
     }, []);
-
-    useEffect(() => {
-        console.log("USER UPDATED:", user);
-    }, [user]);
 
     return (
         <BrowserRouter>
