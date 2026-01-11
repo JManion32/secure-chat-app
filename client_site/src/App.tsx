@@ -13,7 +13,8 @@ export default function App() {
     const [token, setToken] = useState<string>('');
 
     useEffect(() => {
-        wsRef.current = new GatewayWS("ws://localhost:8080");
+        //wsRef.current = new GatewayWS("ws://localhost:8080");
+        wsRef.current = new GatewayWS("wss://cchat.fun");
 
         wsRef.current.onMessage = (msg) => {
         switch (msg.type) {

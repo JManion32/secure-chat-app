@@ -16,3 +16,5 @@ bin/windows/*
 !bin/windows/.gitkeep
 
 !server/include/.gitkeep
+
+node_modules
