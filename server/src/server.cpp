@@ -5,21 +5,41 @@
 
 std::vector<Client> global_clients;
 pthread_mutex_t global_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
-int active_count = 0;
+
+int getActiveCount() {
+    pthread_mutex_lock(&global_clients_mutex);
+    int count = 0;
+    for (const auto& c : global_clients) {
+        if (!c.getToken().empty()) {
+            count++;
+        }
+    }
+    pthread_mutex_unlock(&global_clients_mutex);
+    return count;
+}
 
 // Send message to all connected clients
 void broadcastMessage(const json& response) {
+    std::vector<SocketType> sockets;
+
     pthread_mutex_lock(&global_clients_mutex);
-    for (auto& c : global_clients) {
-        std::string out = response.dump();
-        sendFrame(c.getSockfd(), out);
+    for (const auto& c : global_clients) {
+        if (c.getToken() != "") {
+            sockets.push_back(c.getSockfd());
+        }
     }
     pthread_mutex_unlock(&global_clients_mutex);
+
+    std::string out = response.dump();
+    for (SocketType sock : sockets) {
+        sendFrame(sock, out);
+    }
 }
 
 // When a client disconnects
 void removeClient(SocketType sock) {
     std::string name;
+    bool wasAuthorized = false;
 
     pthread_mutex_lock(&global_clients_mutex);
 
@@ -31,23 +51,29 @@ void removeClient(SocketType sock) {
         }
     );
 
-    if (it != global_clients.end()) {
-        name = it->getName();
-        global_clients.erase(it);
-        active_count = active_count - 1;
-        std::cout << "New active count: " << active_count << std::endl;
+    if (it == global_clients.end()) {
+        pthread_mutex_unlock(&global_clients_mutex);
+        return;
     }
 
-    pthread_mutex_unlock(&global_clients_mutex);
-    std::string name_msg = name + " left the chat";
+    wasAuthorized = !it->getToken().empty();
+    name = it->getName();
+    global_clients.erase(it);
 
+    pthread_mutex_unlock(&global_clients_mutex);
+
+    if (!wasAuthorized) {
+        return;
+    }
+
+    std::string name_msg = name + " left the chat";
     json response = {
         {"type", "chat.response"},
         {"payload", {
             {"server", "true"},
             {"name", name},
             {"content", name_msg},
-            {"activeCount", active_count}
+            {"activeCount", getActiveCount()}
         }}
     };
     broadcastMessage(response);
@@ -100,10 +126,9 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
     }
 
     client->setName(payload["name"]);
+    client->generateToken();
     pthread_mutex_unlock(&global_clients_mutex);
     std::cout << "[AUTH] SUCCESS: user= " << client->getName() << " token= " << client->getToken() << std::endl;
-    active_count = active_count + 1;
-    std::cout << "New active count: " << active_count << std::endl;
 
     std::string name_msg = payload["name"].get<std::string>() + " joined the chat";
     
@@ -113,7 +138,7 @@ void handleAuthRequest(SocketType client_fd, const json& payload) {
             {"server", "true"},
             {"name", payload["name"]},
             {"content", name_msg},
-            {"activeCount", active_count}
+            {"activeCount", getActiveCount()}
         }}
     };
 

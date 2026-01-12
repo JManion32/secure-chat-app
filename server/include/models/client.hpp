@@ -9,7 +9,7 @@
 class Client {
 public:
     // Constructors
-    Client(SocketType sockfd, std::string name);
+    Client(SocketType sockfd, std::string name, std::string token);
 
     // Setters
     void setSockfd(SocketType sockfd) { this->sockfd = sockfd; }
@@ -17,6 +17,7 @@ public:
     void setToken(std::string token) { this->token = token; }
     void setCredits(int credits) { this->credits = credits; }
     void ownTheme(int index) { owned_themes[index] = true; }
+    void generateToken() { this->token = generateRandomToken(); }
 
     // Getters
     SocketType getSockfd() const { return sockfd; }
@@ -36,5 +37,5 @@ private:
     int credits = 0;
     std::vector<bool> owned_themes = std::vector<bool>(9, false);
 
-    std::string generateToken();
+    std::string generateRandomToken();
 };

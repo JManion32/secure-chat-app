@@ -1,13 +1,13 @@
 #include "../../include/models/client.hpp"
 
-Client::Client(SocketType sockfd, std::string name) {
-    setSockfd(sockfd);
-    setName(name);
-    setToken(generateToken());
-    setCredits(0);
+Client::Client(SocketType sockfd, std::string name, std::string token) {
+    this->sockfd = sockfd;
+    this->name = name;
+    this->token = token;
+    this->credits = 0;
 }
 
-std::string Client::generateToken() {
+std::string Client::generateRandomToken() {
         int len = 24;
         static const char alphanum[] =
             "0123456789"

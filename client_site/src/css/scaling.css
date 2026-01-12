@@ -1,9 +1,10 @@
 /* Mobile */
 @media (width <= 640px) {
     :root {
-        --site-font-size: 12px;
+        --site-font-size: 13px;
 
-        --site-title-size: 5rem;
+        --site-title-size: 4.5rem;
+        --site-title-padding: 15rem;
 
         --shop-btn-display: block;
         --shop-panel-display: none;
@@ -19,6 +20,7 @@
         --site-font-size: 14px;
 
         --site-title-size: 6rem;
+        --site-title-padding: 18rem;
 
         --shop-btn-display: block;
         --shop-panel-display: none;

@@ -80,7 +80,7 @@ function Chat({ messages, gateway, user, token, activeCount }: ChatProps) {
                             maxLength={512}
                             autoComplete="off"
                             className="chat-input"
-                            placeholder="Send chat"
+                            placeholder={`Send message as ${user}`}
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             onKeyDown={(e) => {
