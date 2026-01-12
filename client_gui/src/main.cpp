@@ -7,8 +7,8 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     // env-switch
-    const std::string SERVER_IP = "127.0.0.1";
-    //const std::string SERVER_IP = std::getenv("SERVER_IP");
+    //const std::string SERVER_IP = "127.0.0.1";
+    const std::string SERVER_IP = std::getenv("SERVER_IP");
 
     const int SERVER_PORT = 5000;
 

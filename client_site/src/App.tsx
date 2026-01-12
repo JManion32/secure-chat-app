@@ -16,8 +16,8 @@ export default function App() {
 
     useEffect(() => {
         // env-switch
-        wsRef.current = new GatewayWS("ws://localhost:8080");
-        //wsRef.current = new GatewayWS("wss://cchat.fun/ws");
+        //wsRef.current = new GatewayWS("ws://localhost:8080");
+        wsRef.current = new GatewayWS("wss://cchat.fun/ws");
 
         wsRef.current.onMessage = (msg) => {
             switch (msg.type) {
