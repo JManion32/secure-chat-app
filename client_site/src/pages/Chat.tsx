@@ -43,8 +43,7 @@ function Chat({ messages, gateway, user, token, activeCount }: ChatProps) {
     }
 
     function goToPortfolio() {
-        window.location.href =
-        "https://justinmanion.com/projects/securechatroom";
+        window.location.href = "https://justinmanion.com/projects/cchat";
     }
 
     return (
